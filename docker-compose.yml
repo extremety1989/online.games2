@@ -1,0 +1,26 @@
+services:
+  raven:
+    image: ravendb/ravendb:ubuntu-latest
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    restart: always
+    volumes:
+      - ravendb_data_container:/var/lib/ravendb/data
+    environment:
+      - RAVEN_ARGS='--Setup.Mode=None'
+      - RAVEN_Security_UnsecuredAccessAllowed='PrivateNetwork'
+      - RAVEN_Setup_Mode=None
+      - RAVEN_License_Eula_Accepted=true
+      - RAVEN_Logs_Mode=None
+
+
+
+networks:
+  app-network:
+    name: app-network
+    driver: bridge
+
+volumes:
+  ravendb_data_container:
