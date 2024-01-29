@@ -10,11 +10,11 @@ import lombok.Data;
 public class PurchaseModel {
     private String id;
     private String game_id;
-    private String user_id;
     private String bankName;
-    private long bankNumber;
+    private int bankNumber;
     private Date created_at;
     private Double amount;
     private String currency;
+    private BankModel bank;
 }
 

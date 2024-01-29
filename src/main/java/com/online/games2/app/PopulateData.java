@@ -8,6 +8,10 @@ import java.util.List;
 
 import javax.print.Doc;
 
+import org.checkerframework.checker.units.qual.s;
+
+import com.github.javafaker.Faker;
+
 import net.ravendb.client.documents.session.IDocumentSession;
 
 
@@ -181,36 +185,38 @@ public class PopulateData {
             session.store(category);
             session.saveChanges();
             categories.add(category);
-        }
+        } 
  
        
         this.createMockGame(session, categories);
     }
 
     public void createMockGame(IDocumentSession session, List<CategoryModel> categories) {
+        
         Faker faker = new Faker();
-        List <Document> games = new ArrayList<Document>();
-        for (Document category : categories) {
+        List <GameModel> games = new ArrayList<GameModel>();
+        for (CategoryModel category : categories) {
                 for (int i = 0; i < 10; i++) {
                     String name = gameNames.get(faker.random().nextInt(gameNames.size()));
                     Double price = prices.get(faker.random().nextInt(prices.size()));
                     Integer age_restriction = faker.number().numberBetween(9, 18);
                    
-                    Document game = new Document().append("name", name).append("category", 
-                    category).append("price", price)
-                            .append("age_restriction", age_restriction).append("total", 0);
+                    GameModel game = new GameModel();
+                    game.setName(name);
+                    game.setPrice(price);
+                    game.setAgeRestriction(age_restriction);
+                    game.setCategory(category);
+                    session.store(game);
+            
                     games.add(game);
                 }
+                session.saveChanges();
         }
  
-        session.getCollection("games").createIndex(
-            new Document("name", 1).append("_id", 1),
-            new IndexOptions().unique(true));
-        session.getCollection("games").insertMany(games);
     }
 
     public void createMockUser(IDocumentSession session) {
-        List <Document> users = new ArrayList<Document>();
+        List <UserModel> users = new ArrayList<UserModel>();
         
         for (int i = 0; i < 50; i++) {
             Faker faker = new Faker();
@@ -220,28 +226,29 @@ public class PopulateData {
             String userName = faker.name().username();
             String password = faker.internet().password();
             Integer age = faker.number().numberBetween(14, 55);
-            Date date = new Date();
-            Document user = new Document().append("firstname",
-             firstName).append("lastname", lastName).append("email", email).append("age", age)
-                    .append("comments", new ArrayList<ObjectId>())
-                    .append("ratings", new ArrayList<ObjectId>())
-                    .append("purchases", new ArrayList<ObjectId>())
-                    .append("username", userName).append("password", password).append("created_at", date);
+            UserModel user = new UserModel();
+            user.setFirstname(firstName);
+            user.setLastname(lastName);
+            user.setEmail(email);
+            user.setAge(age);
+            user.setUsername(userName);
+            user.setPassword(password);
+            user.setCreated_at(new java.sql.Date(System.currentTimeMillis()));
+            user.setComments(new ArrayList<CommentModel>());
+            user.setRatings(new ArrayList<RatingModel>());
+            user.setPurchases(new ArrayList<PurchaseModel>());
+            session.store(user);
             users.add(user);
         }
-        session.getCollection("users").createIndex(
-                new Document("username", 1).append("email", 1).append("_id", 1), 
-                new IndexOptions().unique(true));
-
-        session.getCollection("users").insertMany(users);
-        List <Document> games = session.getCollection("games").find().into(new ArrayList<Document>());
+        session.saveChanges();
+        List <GameModel> games = session.query(GameModel.class).toList();
         this.createMockPurchase(session, users, games);
         this.createMockComment(session, users, games);
         this.createMockRating(session, users, games);
     }
 
-    public void createMockPurchase(IDocumentSession session, List<Document> users, List<Document> games) {
-        List <Document> purchases = new ArrayList<Document>();
+    public void createMockPurchase(IDocumentSession session, List<UserModel> users, List<GameModel> games) {
+        List <PurchaseModel> purchases = new ArrayList<PurchaseModel>();
 
         for (int i = 0; i < 50; i++) {
             Faker faker = new Faker();
@@ -249,92 +256,85 @@ public class PopulateData {
             Integer bankNumber = faker.number().numberBetween(100000000, 999999999);
             Double amout = prices.get(faker.random().nextInt(prices.size()));
             String currency = "EUR";
-            Document purchase = new Document();
-            purchase.append("game_id", users.get(faker.random().nextInt(users.size())).getObjectId("_id"));
-            purchase.append("created_at", new Date());
-            purchase.append("bank", new Document().append("name", bankName).append("number", bankNumber));
-            purchase.append("amount", amout)
-            .append("currency", currency);
+            PurchaseModel purchase = new PurchaseModel();
+            BankModel bank = new BankModel();
+            bank.setName(bankName);
+            bank.setNumber(bankNumber);
+            purchase.setBank(bank);
+            purchase.setAmount(amout);
+            purchase.setCurrency(currency);
+            purchase.setCreated_at(new java.sql.Date(System.currentTimeMillis()));
+            purchase.setGame_id(games.get(faker.random().nextInt(games.size())).getId());
+
+            session.store(purchase);
             purchases.add(purchase);
         }   
-        session.getCollection("purchases").insertMany(purchases);
+        session.saveChanges();
         pushPurchaseIntoUSer(session, users, purchases);
     }
 
-    public void pushPurchaseIntoUSer(IDocumentSession session, List<Document> users, List<Document> purchases) {
-        for (Document user : users) {
+    public void pushPurchaseIntoUSer(IDocumentSession session, List<UserModel> users, List<PurchaseModel> purchases) {
+        for (UserModel user : users) {
             Faker faker = new Faker();
-            ObjectId userId = user.getObjectId("_id"); 
-            ObjectId purchaseId = purchases.get(faker.random().nextInt(purchases.size())).getObjectId("_id");
-            Bson filter = Filters.eq("_id", userId);
-            Bson push = Updates.push("purchases", purchaseId);
-            session.getCollection("users").updateOne(filter, push);
+            String purchaseId = session.advanced().getDocumentId(purchases.get(faker.random().nextInt(purchases.size())));
+            user.getPurchases().add(session.load(PurchaseModel.class, purchaseId));
         }
+        session.saveChanges();
     }   
 
-    public void createMockComment(IDocumentSession session, List<Document> users, List<Document> games) {
-        List <Document> comments = new ArrayList<Document>();
+    public void createMockComment(IDocumentSession session, List<UserModel> users, List<GameModel> games) {
+        List <CommentModel> comments = new ArrayList<CommentModel>();
 
         for (int i = 0; i < 50; i++) {
             Faker faker = new Faker();
             String comment = faker.lorem().sentence();
-            Document commentDoc = new Document();
-            commentDoc.append("created_at", new Date());
-            commentDoc.append("comment", comment);
-            commentDoc.append("game_id", users.get(faker.random().nextInt(users.size())).getObjectId("_id"));
+            CommentModel commentDoc = new CommentModel();
+            commentDoc.setCreated_at(new java.sql.Date(System.currentTimeMillis()));
+            commentDoc.setComment(comment);
+            commentDoc.setGame_id(games.get(faker.random().nextInt(games.size())).getId());
             comments.add(commentDoc);
+            session.store(commentDoc);
         }  
+        session.saveChanges();
 
-        session.getCollection("comments").insertMany(comments);
-        pushCommentIntoUSerAndGame(session, users, comments, games);
+        pushCommentIntoUSer(session, users, comments, games);
     }
-    public void pushCommentIntoUSerAndGame(IDocumentSession session, List<Document> users, List<Document> comments, List<Document> games) {
-        for (Document user : users) {
+    public void pushCommentIntoUSer(IDocumentSession session, List<UserModel> users,
+     List<CommentModel> comments, List<GameModel> games) {
+        for (UserModel user : users) {
             Faker faker = new Faker();
-            ObjectId userId = user.getObjectId("_id"); 
-            ObjectId commentId = comments.get(faker.random().nextInt(comments.size())).getObjectId("_id");
-            Bson filter = Filters.eq("_id", userId);
-            Bson push = Updates.push("comments", commentId);
-            session.getCollection("users").updateOne(filter, push);
+            CommentModel comment = comments.get(faker.random().nextInt(comments.size()));
+            comment.setUser_id(user.getId());
+            String commentId = session.advanced().getDocumentId(comment);
+            user.getComments().add(session.load(CommentModel.class, commentId));
         }
-
-        for (Document game : games) {
-            Faker faker = new Faker();
-            ObjectId gameId = game.getObjectId("_id"); 
-            ObjectId commentId = comments.get(faker.random().nextInt(comments.size())).getObjectId("_id");
-            Bson filter = Filters.eq("_id", gameId);
-            Bson push = Updates.push("comments", commentId);
-            
-            session.getCollection("games").updateOne(filter, push);
-        }
+        session.saveChanges();
     }   
 
-    public void createMockRating(IDocumentSession session, List<Document> users, List<Document> games) {
-        List <Document> ratings = new ArrayList<Document>();
+    public void createMockRating(IDocumentSession session, List<UserModel> users, List<GameModel> games) {
+        List <RatingModel> ratings = new ArrayList<RatingModel>();
 
         for (int i = 0; i < 50; i++) {
             Faker faker = new Faker();
             Integer rating = faker.number().numberBetween(1, 5);
-            Document ratingDoc = new Document();
-            ratingDoc.append("created_at", new Date());
-            ratingDoc.append("rating", rating);
-            ratingDoc.append("game_id", users.get(faker.random().nextInt(users.size())).getObjectId("_id"));
+            RatingModel ratingDoc = new RatingModel();
+            ratingDoc.setRating(rating);
+            ratingDoc.setGame_id(games.get(faker.random().nextInt(games.size())).getId());
+            session.store(ratingDoc);
             ratings.add(ratingDoc);
         } 
 
-        session.getCollection("ratings").insertMany(ratings);
+        session.saveChanges();
         pushRatingIntoUSer(session, users, ratings);
     }
 
-    public void pushRatingIntoUSer(IDocumentSession session, List<Document> users, List<Document> ratings) {
-        for (Document user : users) {
+    public void pushRatingIntoUSer(IDocumentSession session, List<UserModel> users, List<RatingModel> ratings) {
+        for (UserModel user : users) {
             Faker faker = new Faker();
-            ObjectId userId = user.getObjectId("_id"); 
-            ObjectId ratingId = ratings.get(faker.random().nextInt(ratings.size())).getObjectId("_id");
-            Bson filter = Filters.eq("_id", userId);
-            Bson push = Updates.push("ratings", ratingId);
-            session.getCollection("users").updateOne(filter, push);
+            String ratingId = session.advanced().getDocumentId(ratings.get(faker.random().nextInt(ratings.size())));
+            user.getRatings().add(session.load(RatingModel.class, ratingId));
         }
+        session.saveChanges();
     }   
 
 

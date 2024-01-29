@@ -9,6 +9,6 @@ public class GameModel {
     private String name;
     private CategoryModel category;
     private Double price;
-    private int ageLimit;
+    private int ageRestriction;
     private int total;
 }

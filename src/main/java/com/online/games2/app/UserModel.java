@@ -2,6 +2,7 @@ package com.online.games2.app;
 
 
 import java.sql.Date;
+import java.util.ArrayList;
 
 import lombok.Data;
 
@@ -15,4 +16,7 @@ public class UserModel {
     private String email;
     private String password;
     private Date created_at;
+    private ArrayList<CommentModel> comments;
+    private ArrayList<RatingModel> ratings;
+    private ArrayList<PurchaseModel> purchases;
 }
