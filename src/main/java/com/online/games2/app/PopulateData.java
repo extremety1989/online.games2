@@ -12,6 +12,8 @@ import org.checkerframework.checker.units.qual.s;
 
 import com.github.javafaker.Faker;
 
+import net.ravendb.client.documents.operations.DeleteByQueryOperation;
+import net.ravendb.client.documents.queries.IndexQuery;
 import net.ravendb.client.documents.session.IDocumentSession;
 
 
@@ -170,7 +172,8 @@ public class PopulateData {
         );
 
     public void createMock(IDocumentSession session) {
-        
+     
+     
         this.createMockCategory(session);
         this.createMockUser(session);
     }
@@ -233,7 +236,7 @@ public class PopulateData {
             user.setAge(age);
             user.setUsername(userName);
             user.setPassword(password);
-            user.setCreated_at(new java.sql.Date(System.currentTimeMillis()));
+            user.setCreated_at(new Date());
             user.setComments(new ArrayList<String>());
             user.setRatings(new ArrayList<String>());
             user.setPurchases(new ArrayList<String>());
@@ -263,7 +266,7 @@ public class PopulateData {
             purchase.setBank(bank);
             purchase.setAmount(amout);
             purchase.setCurrency(currency);
-            purchase.setCreated_at(new java.sql.Date(System.currentTimeMillis()));
+            purchase.setCreated_at(new Date());
             purchase.setGame_id(games.get(faker.random().nextInt(games.size())).getId());
 
             session.store(purchase);
@@ -289,7 +292,7 @@ public class PopulateData {
             Faker faker = new Faker();
             String comment = faker.lorem().sentence();
             CommentModel commentDoc = new CommentModel();
-            commentDoc.setCreated_at(new java.sql.Date(System.currentTimeMillis()));
+            commentDoc.setCreated_at(new Date());
             commentDoc.setComment(comment);
             commentDoc.setGame_id(games.get(faker.random().nextInt(games.size())).getId());
             comments.add(commentDoc);

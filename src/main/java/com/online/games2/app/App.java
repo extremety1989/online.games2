@@ -67,7 +67,7 @@ public class App {
                   
                     Rating rating = new Rating();
                     Purchase purchase = new Purchase();
-                    // BulkData bulkData = new BulkData();
+                    PopulateData populate = new PopulateData();
 
                     Reader reader = new Reader();
                     boolean exit = false;
@@ -91,17 +91,18 @@ public class App {
                             game.run(scanner, session, reader);
                         } else if (option == 3) {
                         
-                            user.run(scanner, session);
+                            user.run(scanner, session, reader);
                         }
     
                         else if (option == 4) {
-                          comment.run(scanner, session);
+                          comment.run(scanner, session, reader);
                         } else if (option == 5) {
-                           rating.run(scanner, session);
+                           rating.run(scanner, session, reader);
                         } else if (option == 6) {
-                           purchase.run(scanner, session);
+                           purchase.run(scanner, session, reader);
                         } else if (option == 7) {
-                            // bulkData.createMock(session);
+ 
+                            populate.createMock(session);
                         }
                         
                         else if (option == 0) {

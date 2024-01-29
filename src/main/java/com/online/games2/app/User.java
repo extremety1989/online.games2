@@ -2,13 +2,15 @@ package com.online.games2.app;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
 import net.ravendb.client.documents.session.IDocumentSession;
 
 public class User {
-        public void run(Scanner scanner, IDocumentSession session){
+        public void run(Scanner scanner, IDocumentSession session, Reader reader){
                         boolean sub_exit = false;
 
                         while (!sub_exit) {
@@ -65,7 +67,10 @@ public class User {
                                 user.setEmail(email);
                                 user.setUsername(username);
                                 user.setPassword(password);
-                                user.setCreated_at(new java.sql.Date(System.currentTimeMillis()));
+                                user.setCreated_at(new Date());
+                                user.setComments(new ArrayList<String>());
+                                user.setRatings(new ArrayList<String>());
+                                user.setPurchases(new ArrayList<String>());
                                 session.store(user);
                                 session.saveChanges();
                             
@@ -194,7 +199,7 @@ public class User {
                                 session.delete(found_user);
                                 session.saveChanges();
                             } else if (sub_option == 5) {
-                               this.read(scanner, session);
+                               reader.read(scanner, session, UserModel.class, "UserModels");
                             } 
 
 

@@ -1,7 +1,7 @@
 package com.online.games2.app;
 
 
-import java.sql.Date;
+import java.util.Date;
 
 import lombok.Data;
 

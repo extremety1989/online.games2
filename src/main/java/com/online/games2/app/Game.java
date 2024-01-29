@@ -130,13 +130,14 @@ public class Game {
                 session.saveChanges();
             } else if (sub_option == 4) {
                 
-                reader.read(scanner, session, GameModel.class, "Game"); 
+                reader.read(scanner, session, GameModel.class, "GameModels"); 
 
-            }else if (sub_option == 6) {
+            }else if (sub_option == 5) {
+                System.out.println("Enter category: ");
                this.findByCategory(scanner, session);
-            } else if (sub_option == 7) {
+            } else if (sub_option == 6) {
                this.findByPrice(scanner, session);
-            } else if (sub_option == 8) {
+            } else if (sub_option == 7) {
                 this.purchaseAGame(scanner, session);
             } else if (sub_option == 0) {
                 sub_exit = true;
@@ -168,8 +169,6 @@ public class Game {
             while (paginating) {
 
                 System.out.println("\n");
-                System.out.printf("%-29s %-30s %-5s %-20s %-2s %-9s\n", "Id", "Name", "Price", "Category",
-                        "Age Restriction");
                 System.out.println(
                         "----------------------------------------------------------------------------");
 
@@ -225,9 +224,11 @@ public class Game {
 
     private void findByPrice(Scanner scanner, IDocumentSession session) {
         System.out.println("Enter minimum price: ");
-        Double minPrice = scanner.nextDouble();
+        String price_string = scanner.nextLine();
+        Double minPrice = Double.parseDouble(price_string);
         System.out.println("Enter maximum price: ");
-        Double maxPrice = scanner.nextDouble();
+        String maxPrice_string = scanner.nextLine();
+        Double maxPrice = Double.parseDouble(maxPrice_string);
         System.out.println("\n");
         int pageSize = 5;
         long totalDocuments = session.advanced().rawQuery(GameModel.class, "from GameModels where price >= " + minPrice + " and price <= " + maxPrice)
@@ -371,7 +372,9 @@ public class Game {
                     .waitForNonStaleResults()
                     .toList()
                     .get(0);
+                    
             if (found_game != null) {
+
                 if ((int) found_user.getAge() >= found_game.getAgeRestriction()){
 
                    
@@ -384,7 +387,7 @@ public class Game {
                         new_purchase.setBankNumber(bankNumber);
                     }
                     new_purchase.setGame_id(found_game.getId());
-                    new_purchase.setCreated_at(new java.sql.Date(new Date().getTime()));
+                    new_purchase.setCreated_at(new Date());
                    
                     try {
                         session.store(new_purchase);
@@ -413,79 +416,6 @@ public class Game {
 
         } else {
             System.out.println("user not found.");
-        }
-    }
-
-
-    private void read(Scanner scanner, IDocumentSession session) {
-        {
-            System.out.println("\n");
-            int pageSize = 5;
-            long totalDocuments = session.advanced().rawQuery(GameModel.class, "from GameModels")
-                    .waitForNonStaleResults()
-                    .toList()
-                    .size();
-            int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
-            System.out.printf("Total games: %d\n", totalDocuments);
-            if (totalPages == 0) {
-                System.out.println("No game found.");
-            } else {
-                int currentPage = 1; // Start with page 1
-                boolean paginating = true;
-
-                while (paginating) {
-
-                    System.out.println("\n");
-                    System.out.println(
-                            "----------------------------------------------------------------------------");
-
-                    int skipDocuments = (currentPage - 1) * pageSize;
-                    session.advanced().rawQuery(GameModel.class, "from GameModels")
-                            .waitForNonStaleResults()
-                            .skip(skipDocuments)
-                            .take(pageSize)
-                            .toList()
-                            .forEach((x) -> {
-                                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                                String json = gson.toJson(x);
-                                System.out.println(json);
-                            });
-                    // Pagination controls
-                    System.out.println(
-                            "----------------------------------------------------------------------------");
-                    System.out.print("\n");
-                    System.out.printf("Page %d of %d\n", currentPage, totalPages);
-                    System.out.print("\n");
-                    System.out.printf("n: Next page | p: Previous page | q: Quit\n");
-                    System.out.print("\n");
-                    System.out.print("Enter option: ");
-
-                    String paginationOption = scanner.nextLine();
-
-                    switch (paginationOption) {
-                        case "n":
-                            if (currentPage < totalPages) {
-                                currentPage++;
-                            } else {
-                                System.out.println("You are on the last page.");
-                            }
-                            break;
-                        case "p":
-                            if (currentPage > 1) {
-                                currentPage--;
-                            } else {
-                                System.out.println("You are on the first page.");
-                            }
-                            break;
-                        case "q":
-                            paginating = false;
-                            break;
-                        default:
-                            System.out.println("Invalid option. Please try again.");
-                            break;
-                    }
-                }
-            }
         }
     }
 }

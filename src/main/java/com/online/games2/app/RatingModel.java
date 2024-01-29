@@ -1,7 +1,7 @@
 package com.online.games2.app;
 
 
-import java.sql.Date;
+import java.util.Date;
 
 import lombok.Data;
 
@@ -11,5 +11,5 @@ public class RatingModel {
     private String game_id;
     private String user_id;
     private int rating;
-    private Date date;
+    private Date created_at;
 }

@@ -13,7 +13,7 @@ public class Reader {
         {
             System.out.println("\n");
             int pageSize = 5;
-            long totalDocuments = session.advanced().rawQuery(modelClass, "from "+modelClassString+"Models")
+            long totalDocuments = session.advanced().rawQuery(modelClass, "from "+modelClassString)
                     .waitForNonStaleResults()
                     .toList()
                     .size();
@@ -33,7 +33,7 @@ public class Reader {
                             "----------------------------------------------------------------------------");
 
                     int skipDocuments = (currentPage - 1) * pageSize;
-                    session.advanced().rawQuery(modelClass, "from "+modelClassString+"Models")
+                    session.advanced().rawQuery(modelClass, "from "+modelClassString)
                             .waitForNonStaleResults()
                             .skip(skipDocuments)
                             .take(pageSize)

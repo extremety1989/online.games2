@@ -89,7 +89,7 @@ public class Category {
                         .forEach(x -> session.delete(x));
                 session.saveChanges();
             } else if (sub_option == 4) {
-                reader.read(scanner, session, CategoryModel.class, "Category");
+                reader.read(scanner, session, CategoryModel.class, "CategoryModels");
             } else if (sub_option == 0) {
                 sub_exit = true;
                 break;
