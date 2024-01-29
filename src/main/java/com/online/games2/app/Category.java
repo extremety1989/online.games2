@@ -1,10 +1,10 @@
 package com.online.games2.app;
 
 import java.util.Scanner;
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import net.ravendb.client.documents.session.IDocumentSession;
-
 
 public class Category {
 
@@ -60,12 +60,14 @@ public class Category {
 
                 if (!newName.isEmpty()) {
 
-                    session.advanced().rawQuery(CategoryModel.class, "from CategoryModels where id() = 'CategoryModels/1" + update + "'"
-                            + " or name = '" + update + "'")
+                    session.advanced()
+                            .rawQuery(CategoryModel.class,
+                                    "from CategoryModels where id() = 'CategoryModels/1" + update + "'"
+                                            + " or name = '" + update + "'")
                             .waitForNonStaleResults()
                             .toList()
                             .forEach(x -> x.setName(newName));
-                  
+
                     session.saveChanges();
                 }
 
@@ -77,9 +79,11 @@ public class Category {
                     System.out.println("Please enter the field.");
                     return;
                 }
-              
-                session.advanced().rawQuery(CategoryModel.class, "from CategoryModels where id() = 'CategoryModels/" + delete + "'"
-                        + " or name = '" + delete + "'")
+
+                session.advanced()
+                        .rawQuery(CategoryModel.class,
+                                "from CategoryModels where id() = 'CategoryModels/" + delete + "'"
+                                        + " or name = '" + delete + "'")
                         .waitForNonStaleResults()
                         .toList()
                         .forEach(x -> session.delete(x));
@@ -124,8 +128,12 @@ public class Category {
                             .skip(skipDocuments)
                             .take(pageSize)
                             .toList()
-                            .forEach(x -> System.out.println(((Object) x)));
-                            
+                            .forEach(x -> {
+                                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                                String json = gson.toJson(x);
+                                System.out.println(json);
+                            });
+
                     // Pagination controls
                     System.out.println(
                             "----------------------------------------------------------------------------");
