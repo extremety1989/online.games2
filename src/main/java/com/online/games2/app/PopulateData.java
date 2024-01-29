@@ -172,7 +172,7 @@ public class PopulateData {
     public void createMock(IDocumentSession session) {
         
         this.createMockCategory(session);
-        // this.createMockUser(session);
+        this.createMockUser(session);
     }
 
     public void createMockCategory(IDocumentSession session) {
@@ -234,9 +234,9 @@ public class PopulateData {
             user.setUsername(userName);
             user.setPassword(password);
             user.setCreated_at(new java.sql.Date(System.currentTimeMillis()));
-            user.setComments(new ArrayList<CommentModel>());
-            user.setRatings(new ArrayList<RatingModel>());
-            user.setPurchases(new ArrayList<PurchaseModel>());
+            user.setComments(new ArrayList<String>());
+            user.setRatings(new ArrayList<String>());
+            user.setPurchases(new ArrayList<String>());
             session.store(user);
             users.add(user);
         }
@@ -277,7 +277,7 @@ public class PopulateData {
         for (UserModel user : users) {
             Faker faker = new Faker();
             String purchaseId = session.advanced().getDocumentId(purchases.get(faker.random().nextInt(purchases.size())));
-            user.getPurchases().add(session.load(PurchaseModel.class, purchaseId));
+            user.getPurchases().add(purchaseId);
         }
         session.saveChanges();
     }   
@@ -306,7 +306,7 @@ public class PopulateData {
             CommentModel comment = comments.get(faker.random().nextInt(comments.size()));
             comment.setUser_id(user.getId());
             String commentId = session.advanced().getDocumentId(comment);
-            user.getComments().add(session.load(CommentModel.class, commentId));
+            user.getComments().add(commentId);
         }
         session.saveChanges();
     }   
@@ -332,7 +332,7 @@ public class PopulateData {
         for (UserModel user : users) {
             Faker faker = new Faker();
             String ratingId = session.advanced().getDocumentId(ratings.get(faker.random().nextInt(ratings.size())));
-            user.getRatings().add(session.load(RatingModel.class, ratingId));
+            user.getRatings().add(ratingId);
         }
         session.saveChanges();
     }   

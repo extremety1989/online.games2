@@ -69,7 +69,7 @@ public class App {
                     Purchase purchase = new Purchase();
                     // BulkData bulkData = new BulkData();
 
-         
+                    Reader reader = new Reader();
                     boolean exit = false;
                     while (!exit) {
                         System.out.println("\n");
@@ -80,15 +80,15 @@ public class App {
                         System.out.println("4: Comments management");
                         System.out.println("5: Ratings management");
                         System.out.println("6: Purchases management");
-                        System.out.println("7: Bulk ravendb");
+                        System.out.println("7: Populate ravendb");
                         System.out.println("0: Exit");
                         System.out.print("Enter option: ");
                         int option = scanner.nextInt();
                         scanner.nextLine(); 
                         if (option == 1) {
-                            category.run(scanner, session);
+                            category.run(scanner, session, reader);
                         } else if (option == 2) {
-                            game.run(scanner, session);
+                            game.run(scanner, session, reader);
                         } else if (option == 3) {
                         
                             user.run(scanner, session);

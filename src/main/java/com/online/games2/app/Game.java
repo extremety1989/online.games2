@@ -5,12 +5,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import net.ravendb.client.documents.session.IDocumentSession;
 
 public class Game {
-    public void run(Scanner scanner, IDocumentSession session){
+    public void run(Scanner scanner, IDocumentSession session, Reader reader){
         boolean sub_exit = false;
 
         while (!sub_exit) {
@@ -21,10 +22,9 @@ public class Game {
             System.out.println("2: Update game");
             System.out.println("3: Delete game");
             System.out.println("4: List All games");
-            System.out.println("5: List All games by name");
-            System.out.println("6: List All games by category");
-            System.out.println("7: List All games by price");
-            System.out.println("8: Purchase a game");
+            System.out.println("5: List All games by category");
+            System.out.println("6: List All games by price");
+            System.out.println("7: Purchase a game");
             System.out.println("0: Return to main menu");
             System.out.print("Enter option: ");
 
@@ -65,7 +65,7 @@ public class Game {
                 }
                 game.setName(name);
                 game.setPrice(price);
-                game.setAgeLimit(age_limit);
+                game.setAgeRestriction(age_limit);
                 game.setCategory((CategoryModel) session.advanced().rawQuery(CategoryModel.class, "from CategoryModels where name = '" + category + "'"));
                 game.setTotal(0);
                 session.store(game);
@@ -106,7 +106,7 @@ public class Game {
                    }
              
                     if( newAgeLimit != null){
-                        x.setAgeLimit(newAgeLimit);
+                        x.setAgeRestriction(newAgeLimit);
                     }
                     
                     if (!newCategory.isEmpty()) {
@@ -130,11 +130,9 @@ public class Game {
                 session.saveChanges();
             } else if (sub_option == 4) {
                 
-                this.read(scanner, session); 
+                reader.read(scanner, session, GameModel.class, "Game"); 
 
-            } else if (sub_option == 5) {
-               this.findByName(scanner, session);
-            } else if (sub_option == 6) {
+            }else if (sub_option == 6) {
                this.findByCategory(scanner, session);
             } else if (sub_option == 7) {
                this.findByPrice(scanner, session);
@@ -154,7 +152,8 @@ public class Game {
         String category = scanner.nextLine();
         System.out.println("\n");
         int pageSize = 5;
-        long totalDocuments = session.advanced().rawQuery(GameModel.class, "from GameModels where category.name = '" + category + "'")
+        long totalDocuments = session.advanced().rawQuery(GameModel.class, 
+        "from GameModels where category.name = '" + category + "'")
                 .waitForNonStaleResults()
                 .toList()
                 .size();
@@ -180,7 +179,11 @@ public class Game {
                         .skip(skipDocuments)
                         .take(pageSize)
                         .toList()
-                        .forEach((x) -> System.out.printf("%-30s %-30s %-5s %-20s %-2s %-9s\n", x.getId(), x.getName(), x.getPrice(), x.getCategory(), x.getAgeLimit(), x.getTotal()));
+                        .forEach((x) -> {
+                            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                            String json = gson.toJson(x);
+                            System.out.println(json);
+                        });
 
                 // Pagination controls
                 System.out.println(
@@ -242,8 +245,7 @@ public class Game {
             while (paginating) {
 
                 System.out.println("\n");
-                System.out.printf("%-29s %-30s %-5s %-20s %-2s %-9s\n", "Id", "Name", "Price", "Category",
-                        "Age Restriction");
+  
                 System.out.println(
                         "----------------------------------------------------------------------------");
 
@@ -253,7 +255,12 @@ public class Game {
                         .skip(skipDocuments)
                         .take(pageSize)
                         .toList()
-                        .forEach((x) -> System.out.printf("%-30s %-30s %-5s %-20s %-2s %-9s\n", x.getId(), x.getName(), x.getPrice(), x.getCategory(), x.getAgeLimit(), x.getTotal()));
+                        .forEach((x) -> {
+                            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                            String json = gson.toJson(x);
+                            System.out.println(json);
+                        });
+                  
 
                 // Pagination controls
                 System.out.println(
@@ -310,7 +317,7 @@ public class Game {
                 "Royal Bank of Canada",
                 "BNP Paribas");
 
-        System.out.println("Enter bank (0 to skip): ");
+        System.out.println("Enter bank: ");
         System.out.println("[1] Bank of America");
         System.out.println("[2] JPMorgan Chase");
         System.out.println("[3] Wells Fargo");
@@ -323,7 +330,7 @@ public class Game {
         System.out.println("[10] BNP Paribas");
 
         int bankChoice = scanner.nextInt();
-        if (bankChoice > 10) {
+        if (0 < bankChoice && bankChoice > 10) {
             System.out.println("Invalid choice. Please try again.");
             return;
         }
@@ -331,7 +338,7 @@ public class Game {
         String bankName = bankNames.get(bankChoice - 1);
         System.out.println("Enter bank number (enter to skip): ");
         String bankNumber_string = scanner.nextLine();
-        Long bankNumber = Long.parseLong(bankNumber_string);
+        Integer bankNumber = Integer.parseInt(bankNumber_string);
         if (bankNumber != null && (bankNumber < 0 || bankNumber > 999999999999L)) {
             System.out.println("Invalid bank number. Please try again.");
             return;
@@ -365,7 +372,7 @@ public class Game {
                     .toList()
                     .get(0);
             if (found_game != null) {
-                if ((int) found_user.getAge() >= found_game.getAgeLimit()){
+                if ((int) found_user.getAge() >= found_game.getAgeRestriction()){
 
                    
                     PurchaseModel new_purchase = new PurchaseModel();
@@ -377,7 +384,6 @@ public class Game {
                         new_purchase.setBankNumber(bankNumber);
                     }
                     new_purchase.setGame_id(found_game.getId());
-                    new_purchase.setUser_id(found_user.getId());
                     new_purchase.setCreated_at(new java.sql.Date(new Date().getTime()));
                    
                     try {
@@ -389,6 +395,10 @@ public class Game {
                         .waitForNonStaleResults()
                         .toList()
                         .forEach(x -> x.setTotal((int) x.getTotal() + 1));
+                        found_user.getPurchases().add(new_purchase.getId());
+             
+                        session.saveChanges();
+
                     } catch (Exception e) {
                         System.out.println("Transaction not created.");
                     }
@@ -406,75 +416,6 @@ public class Game {
         }
     }
 
-    private void findByName(Scanner scanner, IDocumentSession session) {
-        String name = scanner.nextLine();
-        System.out.println("\n");
-        int pageSize = 5;
-        long totalDocuments = session.advanced().rawQuery(GameModel.class, "from GameModels where name like '" + name + "%'")
-                .waitForNonStaleResults()
-                .toList()
-                .size();
-        int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
-        System.out.printf("Total games: %d\n", totalDocuments);
-        if (totalPages == 0) {
-            System.out.println("No game found.");
-        } else {
-            int currentPage = 1; // Start with page 1
-            boolean paginating = true;
-
-            while (paginating) {
-
-                System.out.println("\n");
-                System.out.printf("%-29s %-30s %-5s %-20s %-2s %-9s\n", "Id", "Name", "Price", "Category",
-                        "Age Restriction");
-                System.out.println(
-                        "----------------------------------------------------------------------------");
-
-                int skipDocuments = (currentPage - 1) * pageSize;
-                session.advanced().rawQuery(GameModel.class, "from GameModels where name like '" + name + "%'")
-                        .waitForNonStaleResults()
-                        .skip(skipDocuments)
-                        .take(pageSize)
-                        .toList()
-                        .forEach((x) -> System.out.printf("%-30s %-30s %-5s %-20s %-2s %-9s\n", x.getId(), x.getName(), x.getPrice(), x.getCategory(), x.getAgeLimit(), x.getTotal()));
-
-                // Pagination controls
-                System.out.println(
-                        "----------------------------------------------------------------------------");
-                System.out.print("\n");
-                System.out.printf("Page %d of %d\n", currentPage, totalPages);
-                System.out.print("\n");
-                System.out.printf("n: Next page | p: Previous page | q: Quit\n");
-                System.out.print("\n");
-                System.out.print("Enter option: ");
-
-                String paginationOption = scanner.nextLine();
-
-                switch (paginationOption) {
-                    case "n":
-                        if (currentPage < totalPages) {
-                            currentPage++;
-                        } else {
-                            System.out.println("You are on the last page.");
-                        }
-                        break;
-                    case "p":
-                        if (currentPage > 1) {
-                            currentPage--;
-                        } else {
-                            System.out.println("You are on the first page.");
-                        }
-                        break;
-                    case "q":
-                        paginating = false;
-                        break;
-                    default:
-                        System.out.println("Invalid option. Please try again.");
-                        break;
-                }
-            }
-        }
-    }
 
     private void read(Scanner scanner, IDocumentSession session) {
         {
@@ -495,8 +436,6 @@ public class Game {
                 while (paginating) {
 
                     System.out.println("\n");
-                    System.out.printf("%-29s %-30s %-5s %-20s %-2s\n", "Id", "Name", "Price", "Category",
-                    "Age Restriction");
                     System.out.println(
                             "----------------------------------------------------------------------------");
 
@@ -506,7 +445,11 @@ public class Game {
                             .skip(skipDocuments)
                             .take(pageSize)
                             .toList()
-                            .forEach((x) -> System.out.printf("%-30s %-30s %-5s %-20s %-2s\n", x.getId(), x.getName(), x.getPrice(), x.getCategory(), x.getAgeLimit()));
+                            .forEach((x) -> {
+                                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                                String json = gson.toJson(x);
+                                System.out.println(json);
+                            });
                     // Pagination controls
                     System.out.println(
                             "----------------------------------------------------------------------------");
