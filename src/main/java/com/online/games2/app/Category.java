@@ -2,7 +2,9 @@ package com.online.games2.app;
 
 import java.util.Scanner;
 
+
 import net.ravendb.client.documents.session.IDocumentSession;
+
 
 public class Category {
 
@@ -113,7 +115,6 @@ public class Category {
                 while (paginating) {
 
                     System.out.println("\n");
-                    System.out.printf("%-29s %-30s\n", "Id", "Name");
                     System.out.println(
                             "----------------------------------------------------------------------------");
 
@@ -123,7 +124,8 @@ public class Category {
                             .skip(skipDocuments)
                             .take(pageSize)
                             .toList()
-                            .forEach(x -> System.out.printf("%-30s %-30s\n", x.getId(), x.getName()));
+                            .forEach(x -> System.out.println(((Object) x)));
+                            
                     // Pagination controls
                     System.out.println(
                             "----------------------------------------------------------------------------");

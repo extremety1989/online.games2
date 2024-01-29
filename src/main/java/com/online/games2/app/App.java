@@ -68,6 +68,8 @@ public class App {
                     Rating rating = new Rating();
                     Purchase purchase = new Purchase();
                     // BulkData bulkData = new BulkData();
+
+         
                     boolean exit = false;
                     while (!exit) {
                         System.out.println("\n");
