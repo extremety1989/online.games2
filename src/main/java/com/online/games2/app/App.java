@@ -56,67 +56,62 @@ public class App {
             // This process establishes the connection with the Server
             // and downloads various configurations
             // e.g. cluster topology or client configuration
-            try (IDocumentSession session = store.openSession()) {      // Open a session for a default 'Database'
-                    
-                    ensureDatabaseExists(store, "OnlineGames", true);
-                    Scanner scanner = new Scanner(System.in);
-                    Category category = new Category();
-                    Game game = new Game();
-                    User user = new User();
-                    Comment comment = new Comment();
-                  
-                    Rating rating = new Rating();
-                    Purchase purchase = new Purchase();
-                    PopulateData populate = new PopulateData();
-
-                    Reader reader = new Reader();
-                    boolean exit = false;
-                    while (!exit) {
-                        System.out.println("\n");
-                        System.out.println("Management system:");
-                        System.out.println("1: Category management");
-                        System.out.println("2: Games management");
-                        System.out.println("3: Users management");
-                        System.out.println("4: Comments management");
-                        System.out.println("5: Ratings management");
-                        System.out.println("6: Purchases management");
-                        System.out.println("7: Populate ravendb");
-                        System.out.println("0: Exit");
-                        System.out.print("Enter option: ");
-                        int option = scanner.nextInt();
-                        scanner.nextLine(); 
-                        if (option == 1) {
-                            category.run(scanner, session, reader);
-                        } else if (option == 2) {
-                            game.run(scanner, session, reader);
-                        } else if (option == 3) {
-                        
-                            user.run(scanner, session, reader);
-                        }
-    
-                        else if (option == 4) {
-                          comment.run(scanner, session, reader);
-                        } else if (option == 5) {
-                           rating.run(scanner, session, reader);
-                        } else if (option == 6) {
-                           purchase.run(scanner, session, reader);
-                        } else if (option == 7) {
  
-                            populate.createMock(session);
-                        }
-                        
-                        else if (option == 0) {
-                            exit = true;
-                            System.out.println("Exiting...");
-                            break;
-                        }
-    
-                    }
-                    scanner.close();
+            
+            Scanner scanner = new Scanner(System.in);
+            Category category = new Category();
+            Game game = new Game();
+            User user = new User();
+            Comment comment = new Comment();
+          
+            Rating rating = new Rating();
+            Purchase purchase = new Purchase();
+            PopulateData populate = new PopulateData();
+
+            Reader reader = new Reader();
+            boolean exit = false;
+            while (!exit) {
+                System.out.println("\n");
+                System.out.println("Management system:");
+                System.out.println("1: Category management");
+                System.out.println("2: Games management");
+                System.out.println("3: Users management");
+                System.out.println("4: Comments management");
+                System.out.println("5: Ratings management");
+                System.out.println("6: Purchases management");
+                System.out.println("7: Populate ravendb");
+                System.out.println("0: Exit");
+                System.out.print("Enter option: ");
+                int option = scanner.nextInt();
+                scanner.nextLine(); 
+                if (option == 1) {
+                    category.run(scanner, store, reader);
+                } else if (option == 2) {
+                    game.run(scanner, store, reader);
+                } else if (option == 3) {
+                
+                    user.run(scanner, store, reader);
                 }
-                // CompactSettings compactSettings = new CompactSettings();
-                // compactSettings.setDatabaseName("OnlineGames");
-                // store.maintenance().server().send(new CompactDatabaseOperation(compactSettings));
+
+                else if (option == 4) {
+                  comment.run(scanner, store, reader);
+                } else if (option == 5) {
+                   rating.run(scanner, store, reader);
+                } else if (option == 6) {
+                   purchase.run(scanner, store, reader);
+                } else if (option == 7) {
+
+                    populate.createMock(store);
+                }
+                
+                else if (option == 0) {
+                    exit = true;
+                    System.out.println("Exiting...");
+                    break;
+                }
+
+            }
+            scanner.close();
         }
     }
 }

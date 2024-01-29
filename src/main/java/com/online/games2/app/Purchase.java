@@ -2,10 +2,11 @@ package com.online.games2.app;
 
 import java.util.Scanner;
 
+import net.ravendb.client.documents.DocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
 
 public class Purchase {
-    public void run(Scanner scanner, IDocumentSession session, Reader reader) {
+    public void run(Scanner scanner, DocumentStore store, Reader reader) {
 
         // Users management
         boolean sub_exit = false;
@@ -22,20 +23,25 @@ public class Purchase {
             int sub_option = scanner.nextInt();
             scanner.nextLine();
             if (sub_option == 1) {
-
-                System.out.print("Enter id of purchase to delete: ");
-                String delete = scanner.nextLine();
-                try {
-                    session.delete(delete);
-                    session.saveChanges();
-                } catch (Exception e) {
-                    System.out.println("purchase not found.");
+                try (IDocumentSession session = store.openSession()){
+                    System.out.print("Enter id of purchase to delete: ");
+                    String delete = scanner.nextLine();
+                    try {
+                        session.delete(delete);
+                        session.saveChanges();
+                    } catch (Exception e) {
+                        System.out.println("purchase not found.");
+                    }
                 }
+
             } 
             
 
             else if (sub_option == 2) {
-                reader.read(scanner, session, PurchaseModel.class, "PurchaseModels");
+                try (IDocumentSession session = store.openSession()){
+                    reader.read(scanner, session, PurchaseModel.class, "PurchaseModels");
+                }
+         
             } 
         
             else if (sub_option == 0) {

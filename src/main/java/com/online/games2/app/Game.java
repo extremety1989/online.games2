@@ -8,10 +8,11 @@ import java.util.Scanner;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import net.ravendb.client.documents.DocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
 
 public class Game {
-    public void run(Scanner scanner, IDocumentSession session, Reader reader){
+    public void run(Scanner scanner, DocumentStore store, Reader reader){
         boolean sub_exit = false;
 
         while (!sub_exit) {
@@ -32,48 +33,49 @@ public class Game {
             scanner.nextLine();
 
             if (sub_option == 1) {
-
-                System.out.print("Enter name: ");
-                String name = scanner.nextLine();
-
-                System.out.print("Enter category: ");
-                String category = scanner.nextLine();
-
-                System.out.print("Enter price: ");
-                Double price = scanner.nextDouble();
-
-                System.out.print("Enter age limit: ");
-                Integer age_limit = scanner.nextInt();
-                scanner.nextLine();
-                GameModel game = new GameModel();
-                if (session.advanced().rawQuery(GameModel.class, "from GameModels where name = '" + name + "'")
-                        .waitForNonStaleResults()
-                        .toList()
-                        .size() > 0) {
-                    System.out.println("Game already exists.");
-                    return;
+                try (IDocumentSession session = store.openSession()){
+                    System.out.print("Enter name: ");
+                    String name = scanner.nextLine();
+    
+                    System.out.print("Enter category: ");
+                    String category = scanner.nextLine();
+    
+                    System.out.print("Enter price: ");
+                    Double price = scanner.nextDouble();
+    
+                    System.out.print("Enter age limit: ");
+                    Integer age_limit = scanner.nextInt();
+                    scanner.nextLine();
+                    GameModel game = new GameModel();
+                    if (session.advanced().rawQuery(GameModel.class, "from GameModels where name = '" + name + "'")
+                            .waitForNonStaleResults()
+                            .toList()
+                            .size() > 0) {
+                        System.out.println("Game already exists.");
+                        return;
+                    }
+      
+                    //find category
+                    GameModel GameModel = session.advanced().rawQuery(GameModel.class, "from GameModels where category.name = '" + category + "'")
+                            .waitForNonStaleResults()
+                            .toList()
+                            .get(0);
+                    if (GameModel != null){
+                        System.out.println("Category not found.");
+                        return;
+                    }
+                    game.setName(name);
+                    game.setPrice(price);
+                    game.setAgeRestriction(age_limit);
+                    game.setCategory((CategoryModel) session.advanced().rawQuery(CategoryModel.class, "from CategoryModels where name = '" + category + "'"));
+                    game.setTotal(0);
+                    session.store(game);
                 }
-  
-                //find category
-                GameModel GameModel = session.advanced().rawQuery(GameModel.class, "from GameModels where category.name = '" + category + "'")
-                        .waitForNonStaleResults()
-                        .toList()
-                        .get(0);
-                if (GameModel != null){
-                    System.out.println("Category not found.");
-                    return;
-                }
-                game.setName(name);
-                game.setPrice(price);
-                game.setAgeRestriction(age_limit);
-                game.setCategory((CategoryModel) session.advanced().rawQuery(CategoryModel.class, "from CategoryModels where name = '" + category + "'"));
-                game.setTotal(0);
-                session.store(game);
 
             }
             else if (sub_option == 2) {
-
-                System.out.print(
+                try (IDocumentSession session = store.openSession()){
+                    System.out.print(
                         "Enter game-id or game-name to update (or press enter to skip): ");
 
                 String update = scanner.nextLine();
@@ -117,28 +119,47 @@ public class Game {
                     }
                 });   
                 session.saveChanges();
+                }
+
             } else if (sub_option == 3) {
-                // Delete a game
-                System.out.print("Enter id or name of game to delete: ");
-                String delete = scanner.nextLine();
-               
-                session.advanced().rawQuery(GameModel.class, "from GameModels where id() = 'GameModels/" + delete + "'"
-                        + " or name = '" + delete + "'")
-                        .waitForNonStaleResults()
-                        .toList()
-                        .forEach(x -> session.delete(x));
-                session.saveChanges();
-            } else if (sub_option == 4) {
+                try (IDocumentSession session = store.openSession()){
+                                    // Delete a game
+                    System.out.print("Enter id or name of game to delete: ");
+                    String delete = scanner.nextLine();
                 
-                reader.read(scanner, session, GameModel.class, "GameModels"); 
+                    session.advanced().rawQuery(GameModel.class, "from GameModels where id() = 'GameModels/" + delete + "'"
+                            + " or name = '" + delete + "'")
+                            .waitForNonStaleResults()
+                            .toList()
+                            .forEach(x -> session.delete(x));
+                    session.saveChanges();
+                }
+                
+            } else if (sub_option == 4) {
+                try (IDocumentSession session = store.openSession()){
+                    reader.read(scanner, session, GameModel.class, "GameModels"); 
+                }
+          
 
             }else if (sub_option == 5) {
-                System.out.println("Enter category: ");
-               this.findByCategory(scanner, session);
+                try (IDocumentSession session = store.openSession())
+                {
+                    System.out.println("Enter category: ");
+                    this.findByCategory(scanner, session);
+                }
+     
             } else if (sub_option == 6) {
-               this.findByPrice(scanner, session);
+                try (IDocumentSession session = store.openSession())
+                {
+                    this.findByPrice(scanner, session);
+                }
+          
             } else if (sub_option == 7) {
-                this.purchaseAGame(scanner, session);
+                try (IDocumentSession session = store.openSession())
+                {
+                    this.purchaseAGame(scanner, session);
+                }
+           
             } else if (sub_option == 0) {
                 sub_exit = true;
                 break;
@@ -372,7 +393,7 @@ public class Game {
                     .waitForNonStaleResults()
                     .toList()
                     .get(0);
-                    
+
             if (found_game != null) {
 
                 if ((int) found_user.getAge() >= found_game.getAgeRestriction()){

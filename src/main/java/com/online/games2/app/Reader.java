@@ -17,9 +17,9 @@ public class Reader {
                     .waitForNonStaleResults()
                     .toList()
                     .size();
-
+            session.saveChanges();
             int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
-            System.out.printf("Total categories: %d\n", totalDocuments);
+            System.out.printf("Total "+modelClassString+": %d\n", totalDocuments);
             if (totalPages == 0) {
                 System.out.println("No "+modelClassString+" found.");
             } else {
@@ -43,7 +43,7 @@ public class Reader {
                                 String json = gson.toJson(x);
                                 System.out.println(json);
                             });
-
+                    session.saveChanges();
                     // Pagination controls
                     System.out.println(
                             "----------------------------------------------------------------------------");

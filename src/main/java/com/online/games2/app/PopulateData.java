@@ -12,6 +12,7 @@ import org.checkerframework.checker.units.qual.s;
 
 import com.github.javafaker.Faker;
 
+import net.ravendb.client.documents.DocumentStore;
 import net.ravendb.client.documents.operations.DeleteByQueryOperation;
 import net.ravendb.client.documents.queries.IndexQuery;
 import net.ravendb.client.documents.session.IDocumentSession;
@@ -171,11 +172,15 @@ public class PopulateData {
             59.99
         );
 
-    public void createMock(IDocumentSession session) {
+    public void createMock(DocumentStore store) {
+
+        try (IDocumentSession session = store.openSession()) { 
+            this.createMockCategory(session);
+        }
+        try (IDocumentSession session = store.openSession()) { 
+            this.createMockUser(session);
+        }
      
-     
-        this.createMockCategory(session);
-        this.createMockUser(session);
     }
 
     public void createMockCategory(IDocumentSession session) {

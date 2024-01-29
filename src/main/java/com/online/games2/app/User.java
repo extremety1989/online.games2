@@ -7,10 +7,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import net.ravendb.client.documents.DocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
 
 public class User {
-        public void run(Scanner scanner, IDocumentSession session, Reader reader){
+        public void run(Scanner scanner, DocumentStore store, Reader reader){
                         boolean sub_exit = false;
 
                         while (!sub_exit) {
@@ -29,97 +33,99 @@ public class User {
                             scanner.nextLine(); 
 
                             if (sub_option == 1) {
-
-                        
-                                System.out.print("Enter lastname: ");
-                                String lastname = scanner.nextLine();
-                                System.out.print("Enter firstname: ");
-                                String firstname = scanner.nextLine();
-                                System.out.print("Enter age: ");
-                                int age = scanner.nextInt();
-                                scanner.nextLine(); 
-                                System.out.print("Enter email: ");
-                                String email = scanner.nextLine();
-                                System.out.print("Enter username: ");
-                                String username = scanner.nextLine();
-                                System.out.print("Enter password: ");
-                                String password = scanner.nextLine();
-                                MessageDigest messageDigest;
-                                try {
-                                    messageDigest = MessageDigest.getInstance("SHA-256");
-                                    messageDigest.update(password.getBytes());
-                                    String passwordHash = new String(messageDigest.digest());
-                                    password = passwordHash;
-                                } catch (NoSuchAlgorithmException e) {
-                                    e.printStackTrace();
+                                try (IDocumentSession session = store.openSession()){
+                                    System.out.print("Enter lastname: ");
+                                    String lastname = scanner.nextLine();
+                                    System.out.print("Enter firstname: ");
+                                    String firstname = scanner.nextLine();
+                                    System.out.print("Enter age: ");
+                                    int age = scanner.nextInt();
+                                    scanner.nextLine(); 
+                                    System.out.print("Enter email: ");
+                                    String email = scanner.nextLine();
+                                    System.out.print("Enter username: ");
+                                    String username = scanner.nextLine();
+                                    System.out.print("Enter password: ");
+                                    String password = scanner.nextLine();
+                                    MessageDigest messageDigest;
+                                    try {
+                                        messageDigest = MessageDigest.getInstance("SHA-256");
+                                        messageDigest.update(password.getBytes());
+                                        String passwordHash = new String(messageDigest.digest());
+                                        password = passwordHash;
+                                    } catch (NoSuchAlgorithmException e) {
+                                        e.printStackTrace();
+                                    }
+    
+                                    if( lastname.isEmpty() || firstname.isEmpty() || age == 0 || email.isEmpty() || username.isEmpty() || password.isEmpty()){
+                                        System.out.println("Please fill all fields");
+                                        break;
+                                    }
+    
+                                    UserModel user = new UserModel();
+                                   
+                                    user.setLastname(lastname);
+                                    user.setFirstname(firstname);
+                                    user.setAge(age);
+                                    user.setEmail(email);
+                                    user.setUsername(username);
+                                    user.setPassword(password);
+                                    user.setCreated_at(new Date());
+                                    user.setComments(new ArrayList<String>());
+                                    user.setRatings(new ArrayList<String>());
+                                    user.setPurchases(new ArrayList<String>());
+                                    session.store(user);
+                                    session.saveChanges();
                                 }
-
-                                if( lastname.isEmpty() || firstname.isEmpty() || age == 0 || email.isEmpty() || username.isEmpty() || password.isEmpty()){
-                                    System.out.println("Please fill all fields");
-                                    break;
-                                }
-
-                                UserModel user = new UserModel();
-                               
-                                user.setLastname(lastname);
-                                user.setFirstname(firstname);
-                                user.setAge(age);
-                                user.setEmail(email);
-                                user.setUsername(username);
-                                user.setPassword(password);
-                                user.setCreated_at(new Date());
-                                user.setComments(new ArrayList<String>());
-                                user.setRatings(new ArrayList<String>());
-                                user.setPurchases(new ArrayList<String>());
-                                session.store(user);
-                                session.saveChanges();
                             
                             } else if (sub_option == 2) {
 
-                        
-                                System.out.print("Enter user_id, username or email to find: ");
-                                String id_or_username_or_email = scanner.nextLine();
-                                
-                                session.advanced().rawQuery(UserModel.class, "from Users where id = '" + id_or_username_or_email + "' or username = '" + id_or_username_or_email + "' or email = '" + id_or_username_or_email + "'").toList();
-
-                                if(session.advanced().rawQuery(UserModel.class, "from Users where id = '" + id_or_username_or_email + "' or username = '" + id_or_username_or_email + "' or email = '" + id_or_username_or_email + "'").toList().size() == 0){
-                                    System.out.println("User not found");
-                                    break;
+                                try (IDocumentSession session = store.openSession()){
+                                    System.out.print("Enter user_id, username or email to find: ");
+                                    String id_or_username_or_email = scanner.nextLine();
+                                    
+                                    session.advanced().rawQuery(UserModel.class, "from Users where id = '" + id_or_username_or_email + "' or username = '" + id_or_username_or_email + "' or email = '" + id_or_username_or_email + "'").toList();
+    
+                                    if(session.advanced().rawQuery(UserModel.class, "from Users where id = '" + id_or_username_or_email + "' or username = '" + id_or_username_or_email + "' or email = '" + id_or_username_or_email + "'").toList().size() == 0){
+                                        System.out.println("User not found");
+                                        break;
+                                    }
+    
+                                    UserModel found_user = session.advanced().rawQuery(UserModel.class,
+                                    "from UserModels where id = '" + id_or_username_or_email
+                                     + "' or username = '" + id_or_username_or_email + "' or email = '" + id_or_username_or_email + "'")
+                                    .firstOrDefault();
+    
+                                    if(found_user == null){
+                                        System.out.println("User not found");
+                                        break;
+                                    }
+    
+                                    long totalComments = session.advanced().rawQuery(CommentModel.class, "from CommentModels where user_id = '" + found_user.getId() + "'").toList().size();
+                                    long totalRatings = session.advanced().rawQuery(RatingModel.class, "from RatingModels where user_id = '" + found_user.getId() + "'").toList().size();
+                                    long totalPurchases = session.advanced().rawQuery(PurchaseModel.class, "from PurchaseModels where user_id = '" + found_user.getId() + "'").toList().size();
+                                    
+                                    System.out.println("\n");
+                                    System.out.println("User details:");
+                                    System.out.println("Id: " + found_user.getId());
+                                    System.out.println("Lastname: " + found_user.getLastname());
+                                    System.out.println("Firstname: " + found_user.getFirstname());
+                                    System.out.println("Age: " + found_user.getAge());
+                                    System.out.println("Email: " + found_user.getEmail());
+                                    System.out.println("Username: " + found_user.getUsername());
+                                    System.out.println("Password: " + found_user.getPassword());
+                                    System.out.println("Created at: " + found_user.getCreated_at());
+                                    System.out.println("Total comments: " + totalComments);
+                                    System.out.println("Total ratings: " + totalRatings);
+                                    System.out.println("Total purchases: " + totalPurchases);
+                                    System.out.println("\n");
                                 }
 
-                                UserModel found_user = session.advanced().rawQuery(UserModel.class,
-                                "from UserModels where id = '" + id_or_username_or_email
-                                 + "' or username = '" + id_or_username_or_email + "' or email = '" + id_or_username_or_email + "'")
-                                .firstOrDefault();
-
-                                if(found_user == null){
-                                    System.out.println("User not found");
-                                    break;
-                                }
-
-                                long totalComments = session.advanced().rawQuery(CommentModel.class, "from CommentModels where user_id = '" + found_user.getId() + "'").toList().size();
-                                long totalRatings = session.advanced().rawQuery(RatingModel.class, "from RatingModels where user_id = '" + found_user.getId() + "'").toList().size();
-                                long totalPurchases = session.advanced().rawQuery(PurchaseModel.class, "from PurchaseModels where user_id = '" + found_user.getId() + "'").toList().size();
-                                
-                                System.out.println("\n");
-                                System.out.println("User details:");
-                                System.out.println("Id: " + found_user.getId());
-                                System.out.println("Lastname: " + found_user.getLastname());
-                                System.out.println("Firstname: " + found_user.getFirstname());
-                                System.out.println("Age: " + found_user.getAge());
-                                System.out.println("Email: " + found_user.getEmail());
-                                System.out.println("Username: " + found_user.getUsername());
-                                System.out.println("Password: " + found_user.getPassword());
-                                System.out.println("Created at: " + found_user.getCreated_at());
-                                System.out.println("Total comments: " + totalComments);
-                                System.out.println("Total ratings: " + totalRatings);
-                                System.out.println("Total purchases: " + totalPurchases);
-                                System.out.println("\n");
 
                             } else if (sub_option == 3) {
 
-                           
-                                System.out.print(
+                                try (IDocumentSession session = store.openSession()){
+                                    System.out.print(
                                         "Enter lastname or firstname of user to update (or press enter to skip): ");
                                
                                 String update = scanner.nextLine();
@@ -180,26 +186,33 @@ public class User {
                                 }
 
                                 session.saveChanges();
-                 
-                            } else if (sub_option == 4) {
-                             
-                                System.out.print("Enter id, username or email of user to delete: ");
-                                String delete = scanner.nextLine();
-                                
-                                UserModel found_user = session.advanced().rawQuery(UserModel.class,
-                                "from UserModels where id = '" + delete
-                                 + "' or username = '" + delete + "' or email = '" + delete + "'")
-                                .firstOrDefault();
-
-                                if(found_user == null){
-                                    System.out.println("User not found");
-                                    break;
                                 }
 
-                                session.delete(found_user);
-                                session.saveChanges();
+                 
+                            } else if (sub_option == 4) {
+                                try (IDocumentSession session = store.openSession()){
+                                    System.out.print("Enter id, username or email of user to delete: ");
+                                    String delete = scanner.nextLine();
+                                    
+                                    UserModel found_user = session.advanced().rawQuery(UserModel.class,
+                                    "from UserModels where id = '" + delete
+                                     + "' or username = '" + delete + "' or email = '" + delete + "'")
+                                    .firstOrDefault();
+    
+                                    if(found_user == null){
+                                        System.out.println("User not found");
+                                        break;
+                                    }
+    
+                                    session.delete(found_user);
+                                    session.saveChanges();
+                                }
+
                             } else if (sub_option == 5) {
-                               reader.read(scanner, session, UserModel.class, "UserModels");
+                                try (IDocumentSession session = store.openSession()){
+                                    reader.read(scanner, session, UserModel.class, "UserModels");
+                                }
+                         
                             } 
 
 
@@ -214,12 +227,18 @@ public class User {
     }
 
 
-    private void read(Scanner scanner, IDocumentSession session) {
+    private <T> void readAll(Scanner scanner, IDocumentSession session, Class<T> modelClass, String modelClassString, String what) {
 
         System.out.println("\n");
         int pageSize = 5;
        
-        long totalDocuments =  session.advanced().rawQuery(UserModel.class, "from UserModels").toList().size();
+        long totalDocuments = session.advanced().rawQuery(modelClass, "from UserModels where id = '" + what
+        
+        + "' or username = '" + what + "' or email = '" + what + "'")
+                .waitForNonStaleResults()
+                .toList()
+                .size();
+        session.saveChanges();
         int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
         System.out.printf("Total users: %d\n", totalDocuments);
         if (totalPages == 0) {
@@ -231,15 +250,23 @@ public class User {
             while (paginating) {
                
                 System.out.println("\n");
-                System.out.printf("%-29s %-20s %-20s %-5s %-20s %-20s\n", "Id", "Lastname", "Firstname", "Age", "Email", "Username");
+               
                 System.out.println(
                         "------------------------------------------------------------------------------------------------------------------------------------------");
 
                 int skipDocuments = (currentPage - 1) * pageSize;
-                List <UserModel> pageusers = session.advanced().rawQuery(UserModel.class, "from UserModels").skip(skipDocuments).take(pageSize).toList();
-                for (UserModel user : pageusers) {
-                    System.out.printf("%-29s %-20s %-20s %-5s %-20s %-20s\n", user.getId(), user.getLastname(), user.getFirstname(), user.getAge(), user.getEmail(), user.getUsername());
-                }
+                session.advanced().rawQuery(modelClass, "from UserModels where id = '" + what +
+                                                        "' or username = '" + what + "' or email = '" + what + "'")
+                        .waitForNonStaleResults()
+                        .skip(skipDocuments)
+                        .take(pageSize)
+                        .toList()
+                        .forEach(x -> {
+                            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                            String json = gson.toJson(x);
+                            System.out.println(json);
+                });
+
 
                 // Pagination controls
                 System.out.println(
