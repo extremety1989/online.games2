@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
+import org.checkerframework.checker.units.qual.s;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -114,56 +116,46 @@ public class Game {
                     System.out.print(
                         "Enter game-id or game-name to update (or press enter to skip): ");
 
+                
                 String update = scanner.nextLine();
 
-                System.out.print("Enter new name: ");
-                String newName = scanner.nextLine();
+                GameModel gameModel = session.advanced().rawQuery(GameModel.class, 
+                "from GameModels where id() = 'GameModels/" + update + "'"
+                + " or name = '" + update + "'").toList().get(0);
+
 
                 System.out.print("Enter new category: ");
                 String newCategory = scanner.nextLine();
 
                 System.out.print("Enter new price: ");
                 String newPrice_string = scanner.nextLine();
-                if (newPrice_string.isEmpty()) {
-                    System.out.println("Please enter the field.");
-                    return;
+                Double newPrice = null;
+                if (!newPrice_string.isEmpty()) {
+                    newPrice = Double.parseDouble(newPrice_string);
                 }
-                Double newPrice = Double.parseDouble(newPrice_string);
+          
 
                 System.out.print("Enter new age limit: ");
                 String newAgeLimit_string = scanner.nextLine();
-                if (newAgeLimit_string.isEmpty()) {
-                    System.out.println("Please enter the field.");
-                    return;
+                Integer newAgeLimit = null;
+                if (!newAgeLimit_string.isEmpty()) {
+                    newAgeLimit = Integer.parseInt(newAgeLimit_string);
                 }
-                Integer newAgeLimit = Integer.parseInt(newAgeLimit_string);
-          
-
-           
-                session.advanced().rawQuery(GameModel.class, "from GameModels where id() = 'GameModels/" + update + "'"
-                + " or name = '" + update + "'")
-                .waitForNonStaleResults()
-                .toList()
-                .forEach(x -> 
-                {
-                    if (!newName.isEmpty()) {
-                        x.setName(newName);
-                    }
-                   if (newPrice != null){
-                      x.setPrice(newPrice);
-                   }
-             
-                    if( newAgeLimit != null){
-                        x.setAgeRestriction(newAgeLimit);
-                    }
-                    
-                    if (!newCategory.isEmpty()) {
-                        x.setCategory((CategoryModel) session.advanced().rawQuery(CategoryModel.class, "from CategoryModels where name = '" + newCategory + "'")
-                        .waitForNonStaleResults()
-                        .toList()
-                        .get(0));
-                    }
-                });   
+               
+                if (newPrice != null){
+                    gameModel.setPrice(newPrice);
+                }
+         
+                if( newAgeLimit != null){
+                    gameModel.setAgeRestriction(newAgeLimit);
+                }
+                
+                if (!newCategory.isEmpty()) {
+                    gameModel.setCategory((CategoryModel) session.advanced().rawQuery(CategoryModel.class, "from CategoryModels where name = '" + newCategory + "'")
+                    .waitForNonStaleResults()
+                    .toList()
+                    .get(0));
+                }  
                 session.saveChanges();
                 }
 
@@ -244,7 +236,9 @@ public class Game {
                         "----------------------------------------------------------------------------");
 
                 int skipDocuments = (currentPage - 1) * pageSize;
-                results
+                session.advanced().rawQuery(GameModel.class, 
+        "from GameModels where category.name = '" + category + "'")
+                .waitForNonStaleResults()
                         .skip(skipDocuments)
                         .take(pageSize)
                         .toList()
@@ -322,7 +316,8 @@ public class Game {
                         "----------------------------------------------------------------------------");
 
                 int skipDocuments = (currentPage - 1) * pageSize;
-                results
+                session.advanced().rawQuery(GameModel.class, "from GameModels where price >= " + minPrice + " and price <= " + maxPrice)
+        .waitForNonStaleResults()
                         .skip(skipDocuments)
                         .take(pageSize)
                         .toList()
