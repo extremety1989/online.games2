@@ -43,11 +43,23 @@ public class Game {
                     String category = scanner.nextLine();
     
                     System.out.print("Enter price: ");
-                    Double price = scanner.nextDouble();
+                    String price_string = scanner.nextLine();
+
+                    if(price_string.isEmpty()){
+                        System.out.println("Please enter the field.");
+                        return;
+                    }
+
+                    Double price = Double.parseDouble(price_string);
     
                     System.out.print("Enter age limit: ");
-                    Integer age_limit = scanner.nextInt();
-                    scanner.nextLine();
+                    String age_restriction_string = scanner.nextLine();
+                    if(age_restriction_string.isEmpty()){
+                        System.out.println("Please enter the field.");
+                        return;
+                    }
+                    Integer age_restriction = Integer.parseInt(age_restriction_string);
+                 
                     GameModel game = new GameModel();
                     if (session.advanced().rawQuery(GameModel.class, "from GameModels where name = '" + name + "'")
                             .waitForNonStaleResults()
@@ -68,10 +80,11 @@ public class Game {
                     }
                     game.setName(name);
                     game.setPrice(price);
-                    game.setAgeRestriction(age_limit);
+                    game.setAgeRestriction(age_restriction);
                     game.setCategory((CategoryModel) session.advanced().rawQuery(CategoryModel.class, "from CategoryModels where name = '" + category + "'"));
                     game.setTotal(0);
                     session.store(game);
+                    session.saveChanges();
                 }
 
             }
@@ -107,11 +120,21 @@ public class Game {
                 String newCategory = scanner.nextLine();
 
                 System.out.print("Enter new price: ");
-                Double newPrice = scanner.nextDouble();
+                String newPrice_string = scanner.nextLine();
+                if (newPrice_string.isEmpty()) {
+                    System.out.println("Please enter the field.");
+                    return;
+                }
+                Double newPrice = Double.parseDouble(newPrice_string);
 
                 System.out.print("Enter new age limit: ");
-                Integer newAgeLimit = scanner.nextInt();
-                scanner.nextLine();
+                String newAgeLimit_string = scanner.nextLine();
+                if (newAgeLimit_string.isEmpty()) {
+                    System.out.println("Please enter the field.");
+                    return;
+                }
+                Integer newAgeLimit = Integer.parseInt(newAgeLimit_string);
+          
 
            
                 session.advanced().rawQuery(GameModel.class, "from GameModels where id() = 'GameModels/" + update + "'"
