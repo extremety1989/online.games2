@@ -51,11 +51,12 @@ public class Game {
                     System.out.print("Enter category: ");
                     String category = scanner.nextLine();
 
-                         
-                    if (session.advanced().rawQuery(GameModel.class, "from CategoryModels where name = '" + name + "'")
+                    CategoryModel categoryModel = session.advanced().rawQuery(CategoryModel.class, "from CategoryModels where name = '" + category + "'")
                     .waitForNonStaleResults()
                     .toList()
-                            .size() < 1) {
+                    .get(0);
+                    
+                    if (categoryModel == null){
                         System.out.println("Category does not exists.");
                       return;
                     }
