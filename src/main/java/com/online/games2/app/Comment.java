@@ -1,12 +1,14 @@
 package com.online.games2.app;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Scanner;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import net.ravendb.client.documents.DocumentStore;
+import net.ravendb.client.documents.session.IDocumentQuery;
 import net.ravendb.client.documents.session.IDocumentSession;
 
 public class Comment {
@@ -111,8 +113,32 @@ public class Comment {
                     System.out.print("Enter id of comment to delete: ");
                     String delete = scanner.nextLine();
                     try {
-                        session.delete("CommentModels/" + delete);
+
+                        CommentModel deletedModel = session.load(CommentModel.class, "CommentModels/" + delete);
+                    
+                      
+                        List <UserModel> userModels = session.query(UserModel.class).whereEquals("comments",
+                         deletedModel.getId())
+                        .toList();
+                        for (UserModel userModel : userModels) {
+                            if (userModel.getComments().contains(deletedModel.getId())) {
+                                userModel.getComments().remove(deletedModel.getId());
+                            }
+                        }
+            
+                        List <GameModel> gameModels = session.query(GameModel.class).whereEquals("comments",
+                        deletedModel.getId())
+                       .toList();
+                       
+                        for (GameModel gameModel : gameModels) {
+                            if (gameModel.getComments().contains(deletedModel.getId())) {
+                                gameModel.getComments().remove(deletedModel.getId());
+                            }
+                        }
+
+                        session.delete(deletedModel);
                         session.saveChanges();
+
                     } catch (Exception e) {
                         System.out.println("Comment not found.");
                     }

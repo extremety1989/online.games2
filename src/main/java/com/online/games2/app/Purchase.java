@@ -1,5 +1,6 @@
 package com.online.games2.app;
 
+import java.util.List;
 import java.util.Scanner;
 
 import com.google.gson.Gson;
@@ -31,7 +32,16 @@ public class Purchase {
                     System.out.print("Enter id of purchase to delete: ");
                     String delete = scanner.nextLine();
                     try {
-                        session.delete(delete);
+                        PurchaseModel deletedModel = session.load(PurchaseModel.class, delete);
+                          List <UserModel> userModels = session.query(UserModel.class).whereEquals("purchases",
+                         deletedModel.getId())
+                        .toList();
+                        for (UserModel userModel : userModels) {
+                            if (userModel.getPurchases().contains(deletedModel.getId())) {
+                                userModel.getPurchases().remove(deletedModel.getId());
+                            }
+                        }
+                        session.delete(deletedModel);
                         session.saveChanges();
                     } catch (Exception e) {
                         System.out.println("purchase not found.");

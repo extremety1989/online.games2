@@ -1,5 +1,6 @@
 package com.online.games2.app;
 
+import java.util.List;
 import java.util.Scanner;
 
 import com.google.gson.Gson;
@@ -107,7 +108,29 @@ public class Rating {
                     try (IDocumentSession session = store.openSession()){
                         System.out.print("Enter id of rating to delete: ");
                         String delete = scanner.nextLine();
-                        session.delete("RatingModels/" + delete);
+                        RatingModel deletedModel = session.load(RatingModel.class, "RatingModels/" + delete);
+                    
+                      
+                        List <UserModel> userModels = session.query(UserModel.class).whereEquals("ratings",
+                         deletedModel.getId())
+                        .toList();
+                        for (UserModel userModel : userModels) {
+                            if (userModel.getRatings().contains(deletedModel.getId())) {
+                                userModel.getRatings().remove(deletedModel.getId());
+                            }
+                        }
+            
+
+                         List <GameModel> gameModels = session.query(GameModel.class).whereEquals("ratings",
+                        deletedModel.getId())
+                       .toList();
+                       
+                        for (GameModel gameModel : gameModels) {
+                            if (gameModel.getRatings().contains(deletedModel.getId())) {
+                                gameModel.getRatings().remove(deletedModel.getId());
+                            }
+                        }
+                        session.delete(deletedModel);
                         session.saveChanges();
                     }
                 } 
