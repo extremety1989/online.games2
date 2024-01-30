@@ -440,7 +440,7 @@ public class Game {
                    
                     try {
                         session.store(new_purchase);
-                        session.saveChanges();
+               
                         System.out.println("Transaction created successfully!");
                         results
                         .forEach(x -> x.setTotal((int) x.getTotal() + 1));

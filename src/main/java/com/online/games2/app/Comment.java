@@ -64,8 +64,9 @@ public class Comment {
                     commentModel.setComment(comment);
                     commentModel.setGame_id(gameModel.getId());
                     commentModel.setCreated_at(new Date());
-                    userModel.getComments().add(commentModel.getId());
+               
                     session.store(commentModel);
+                    userModel.getComments().add(commentModel.getId());
                     session.saveChanges();
                 }
 
