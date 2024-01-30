@@ -21,8 +21,8 @@ public class Game {
             System.out.println("\n");
             System.out.println("Choose an operation:");
             System.out.println("1: Create game");
-            System.out.println("2: Update game");
-            System.out.println("3: View game");
+            System.out.println("2: View game");
+            System.out.println("3: Update game");
             System.out.println("4: Delete game");
             System.out.println("5: List All games");
             System.out.println("6: List All games by category");
@@ -55,7 +55,7 @@ public class Game {
                     .waitForNonStaleResults()
                     .toList()
                     .get(0);
-                    
+
                     if (categoryModel == null){
                         System.out.println("Category does not exists.");
                       return;
