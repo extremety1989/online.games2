@@ -226,7 +226,7 @@ public class PopulateData {
     public void createMockUser(IDocumentSession session) {
         List <UserModel> users = new ArrayList<UserModel>();
         
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 1000; i++) {
             Faker faker = new Faker();
             String firstName = faker.name().firstName();
             String lastName = faker.name().lastName();
@@ -258,7 +258,7 @@ public class PopulateData {
     public void createMockPurchase(IDocumentSession session, List<UserModel> users, List<GameModel> games) {
         List <PurchaseModel> purchases = new ArrayList<PurchaseModel>();
 
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 1000; i++) {
             Faker faker = new Faker();
             String bankName = bankNames.get(faker.random().nextInt(bankNames.size()));
             Long bankNumber = (long) faker.number().numberBetween(100000000, 999999999);
@@ -293,7 +293,7 @@ public class PopulateData {
     public void createMockComment(IDocumentSession session, List<UserModel> users, List<GameModel> games) {
         List <CommentModel> comments = new ArrayList<CommentModel>();
 
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 1000; i++) {
             Faker faker = new Faker();
             String comment = faker.lorem().sentence();
             CommentModel commentDoc = new CommentModel();
@@ -321,7 +321,7 @@ public class PopulateData {
     public void createMockRating(IDocumentSession session, List<UserModel> users, List<GameModel> games) {
         List <RatingModel> ratings = new ArrayList<RatingModel>();
 
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 1000; i++) {
             Faker faker = new Faker();
             Integer rating = faker.number().numberBetween(1, 5);
             RatingModel ratingDoc = new RatingModel();
