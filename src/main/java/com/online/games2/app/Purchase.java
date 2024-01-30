@@ -32,17 +32,7 @@ public class Purchase {
                     System.out.print("Enter id of purchase to delete: ");
                     String delete = scanner.nextLine();
                     try {
-                        PurchaseModel deletedModel = session.load(PurchaseModel.class, "PurchaseModels/" + delete);
-
-                          List <UserModel> userModels = session.query(UserModel.class).whereEquals("purchases",
-                         deletedModel.getId())
-                        .toList();
-                        for (UserModel userModel : userModels) {
-                            if (userModel.getPurchases().contains(deletedModel.getId())) {
-                                userModel.getPurchases().remove(deletedModel.getId());
-                            }
-                        }
-                        session.delete(deletedModel);
+                        session.delete("PurchaseModels/" + delete);
                         session.saveChanges();
                     } catch (Exception e) {
                         System.out.println("purchase not found.");
@@ -70,7 +60,6 @@ public class Purchase {
                 try (IDocumentSession session = store.openSession()){
                     reader.read(scanner, session, PurchaseModel.class, "PurchaseModels");
                 }
-         
             } 
         
             else if (sub_option == 0) {

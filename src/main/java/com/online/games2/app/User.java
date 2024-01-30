@@ -7,12 +7,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
+import org.apache.commons.lang3.ObjectUtils.Null;
 import org.checkerframework.checker.units.qual.s;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import net.ravendb.client.documents.DocumentStore;
+import net.ravendb.client.documents.session.IDocumentQuery;
 import net.ravendb.client.documents.session.IDocumentSession;
 import net.ravendb.client.documents.session.IRawDocumentQuery;
 
@@ -78,9 +80,6 @@ public class User {
                     user.setUsername(username);
                     user.setPassword(password);
                     user.setCreated_at(new Date());
-                    user.setComments(new ArrayList<String>());
-                    user.setRatings(new ArrayList<String>());
-                    user.setPurchases(new ArrayList<String>());
                     session.store(user);
                     session.saveChanges();
                 }
@@ -203,21 +202,21 @@ public class User {
             else if (sub_option == 6) {
                 try (IDocumentSession session = store.openSession()) {
                     System.out.print("Enter user_id, username or email to find: ");
-                    this.readAllComments(scanner, session);
+                    this.readAll(scanner, session, "CommentModels",CommentModel.class, "comments");
                 }
 
             }
             else if (sub_option == 7) {
                 try (IDocumentSession session = store.openSession()) {
                     System.out.print("Enter user_id, username or email to find: ");
-                    this.readAllRatings(scanner, session);
+                    this.readAll(scanner, session,"RatingModels", RatingModel.class, "ratings");
                 }
 
             }
             else if (sub_option == 8) {
                 try (IDocumentSession session = store.openSession()) {
                     System.out.print("Enter user_id, username or email to find: ");
-                    this.readAllPurchases(scanner, session);
+                    this.readAll(scanner, session, "PurchaseModels",PurchaseModel.class, "purchases");
                 }
 
             }
@@ -232,30 +231,33 @@ public class User {
         }
     }
 
-    private <T> void readAllComments(Scanner scanner, IDocumentSession session) {
+    private <T> void readAll(Scanner scanner, IDocumentSession session, String Model, Class<T> ModelClass, String What) {
 
         System.out.println("\n");
         String value = scanner.nextLine();
         int pageSize = 5;
       
-        IRawDocumentQuery<UserModel> results = session.advanced()
-                .rawQuery(UserModel.class, "from UserModels where id = '" + value
-                        + "' or username = '" + value + "' or email = '" + value + "'")
-                .waitForNonStaleResults();
+        UserModel found_user = session.advanced().rawQuery(UserModel.class,
+        "from UserModels where id = '" + value
+                + "' or username = '" + value + "' or email = '"
+                + value + "'")
+        .firstOrDefault();
 
-        UserModel user = results.firstOrDefault();
-
-        if (user == null) {
+        if (found_user == null) {
             System.out.println("User not found");
             return;
         }
 
-        long totalDocuments = user.getComments().size();
+        List<T> results = session.query(ModelClass)
+        .whereEquals("user_id", found_user.getId())
+        .toList();
+
+        long totalDocuments = results.size();
 
         int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
-        System.out.printf("Total Comments: %d\n", totalDocuments);
+        System.out.printf("Total "+What+": %d\n", totalDocuments);
         if (totalPages == 0) {
-            System.out.println("No Comments found.");
+            System.out.println("No "+What+" found.");
         } else {
             int currentPage = 1; // Start with page 1
             boolean paginating = true;
@@ -268,219 +270,18 @@ public class User {
                         "------------------------------------------------------------------------------------------------------------------------------------------");
 
                 int skipDocuments = (currentPage - 1) * pageSize;
-                int processed = 0;
-
-                for (String commentId : user.getComments()) {
+            
                
-                    if (processed++ < skipDocuments) {
-                        continue;
-                    }
+                session.advanced().rawQuery(ModelClass, "from "+Model+" where user_id = '"+found_user.getId()+"'")
+                            .skip(skipDocuments)
+                            .take(pageSize)
+                            .toList()
+                            .forEach(x -> {
+                                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                                String json = gson.toJson(x);
+                                System.out.println(json);
+                            });
 
-               
-                    CommentModel data = session.load(CommentModel.class, commentId);
-                    if (data != null) {
-                        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                        String json = gson.toJson(data);
-                        System.out.println(json);
-                    }
-
-             
-                    if (processed - skipDocuments >= pageSize) {
-                        break;
-                    }
-                }
-
-                // Pagination controls
-                System.out.println(
-                        "------------------------------------------------------------------------------------------------------------------------------------------");
-                System.out.print("\n");
-                System.out.printf("Page %d of %d\n", currentPage, totalPages);
-                System.out.print("\n");
-                System.out.printf("n: Next page | p: Previous page | q: Quit\n");
-                System.out.print("\n");
-                System.out.print("Enter option: ");
-
-                String paginationOption = scanner.nextLine();
-
-                switch (paginationOption) {
-                    case "n":
-                        if (currentPage < totalPages) {
-                            currentPage++;
-                        } else {
-                            System.out.println("You are on the last page.");
-                        }
-                        break;
-                    case "p":
-                        if (currentPage > 1) {
-                            currentPage--;
-                        } else {
-                            System.out.println("You are on the first page.");
-                        }
-                        break;
-                    case "q":
-                        paginating = false;
-                        break;
-                    default:
-                        System.out.println("Invalid option. Please try again.");
-                        break;
-                }
-            }
-        }
-    }
-
-    private <T> void readAllRatings(Scanner scanner, IDocumentSession session) {
-
-        System.out.println("\n");
-        String value = scanner.nextLine();
-        int pageSize = 5;
-    
-        IRawDocumentQuery<UserModel> results = session.advanced()
-                .rawQuery(UserModel.class, "from UserModels where id = '" + value
-                        + "' or username = '" + value + "' or email = '" + value + "'")
-                .waitForNonStaleResults();
-
-        UserModel user = results.firstOrDefault();
-
-        if (user == null) {
-            System.out.println("User not found");
-            return;
-        }
-
-        long totalDocuments = user.getRatings().size();
-
-        int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
-        System.out.printf("Total Ratings: %d\n", totalDocuments);
-        if (totalPages == 0) {
-            System.out.println("No Ratings found.");
-        } else {
-            int currentPage = 1; // Start with page 1
-            boolean paginating = true;
-
-            while (paginating) {
-
-                System.out.println("\n");
-
-                System.out.println(
-                        "------------------------------------------------------------------------------------------------------------------------------------------");
-
-                int skipDocuments = (currentPage - 1) * pageSize;
-                int processed = 0;
-
-                for (String ratingId : user.getRatings()) {
-              
-                    if (processed++ < skipDocuments) {
-                        continue;
-                    }
-
-                    RatingModel data = session.load(RatingModel.class, ratingId);
-                    if (data != null) {
-                        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                        String json = gson.toJson(data);
-                        System.out.println(json);
-                    }
-
-             
-                    if (processed - skipDocuments >= pageSize) {
-                        break;
-                    }
-                }
-
-                // Pagination controls
-                System.out.println(
-                        "------------------------------------------------------------------------------------------------------------------------------------------");
-                System.out.print("\n");
-                System.out.printf("Page %d of %d\n", currentPage, totalPages);
-                System.out.print("\n");
-                System.out.printf("n: Next page | p: Previous page | q: Quit\n");
-                System.out.print("\n");
-                System.out.print("Enter option: ");
-
-                String paginationOption = scanner.nextLine();
-
-                switch (paginationOption) {
-                    case "n":
-                        if (currentPage < totalPages) {
-                            currentPage++;
-                        } else {
-                            System.out.println("You are on the last page.");
-                        }
-                        break;
-                    case "p":
-                        if (currentPage > 1) {
-                            currentPage--;
-                        } else {
-                            System.out.println("You are on the first page.");
-                        }
-                        break;
-                    case "q":
-                        paginating = false;
-                        break;
-                    default:
-                        System.out.println("Invalid option. Please try again.");
-                        break;
-                }
-            }
-        }
-    }
-
-    private <T> void readAllPurchases(Scanner scanner, IDocumentSession session) {
-
-        System.out.println("\n");
-        String value = scanner.nextLine();
-        int pageSize = 5;
-    
-        IRawDocumentQuery<UserModel> results = session.advanced()
-                .rawQuery(UserModel.class, "from UserModels where id = '" + value
-                        + "' or username = '" + value + "' or email = '" + value + "'")
-                .waitForNonStaleResults();
-
-        UserModel user = results.firstOrDefault();
-
-        if (user == null) {
-            System.out.println("User not found");
-            return;
-        }
-
-        long totalDocuments = user.getPurchases().size();
-
-        int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
-        System.out.printf("Total Purchases: %d\n", totalDocuments);
-        if (totalPages == 0) {
-            System.out.println("No Purchases found.");
-        } else {
-            int currentPage = 1; // Start with page 1
-            boolean paginating = true;
-
-            while (paginating) {
-
-                System.out.println("\n");
-
-                System.out.println(
-                        "------------------------------------------------------------------------------------------------------------------------------------------");
-
-                int skipDocuments = (currentPage - 1) * pageSize;
-                int processed = 0;
-
-                for (String purchaseId : user.getPurchases()) {
-               
-                    if (processed++ < skipDocuments) {
-                        continue;
-                    }
-
-                    
-                    PurchaseModel data = session.load(PurchaseModel.class, purchaseId);
-                    if (data != null) {
-                        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                        String json = gson.toJson(data);
-                        System.out.println(json);
-                    }
-
-                    if (processed - skipDocuments >= pageSize) {
-                        break;
-                    }
-                }
-
-                // Pagination controls
                 System.out.println(
                         "------------------------------------------------------------------------------------------------------------------------------------------");
                 System.out.print("\n");

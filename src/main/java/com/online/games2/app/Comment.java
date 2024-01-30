@@ -64,12 +64,10 @@ public class Comment {
     
                     CommentModel commentModel = new CommentModel();
                     commentModel.setComment(comment);
+                    commentModel.setUser_id(userModel.getId());
                     commentModel.setGame_id(gameModel.getId());
                     commentModel.setCreated_at(new Date());
-                    
                     session.store(commentModel);
-                    userModel.getComments().add(commentModel.getId());
-                    gameModel.getComments().add(commentModel.getId());
                     session.saveChanges();
                 }
 
@@ -113,30 +111,7 @@ public class Comment {
                     System.out.print("Enter id of comment to delete: ");
                     String delete = scanner.nextLine();
                     try {
-
-                        CommentModel deletedModel = session.load(CommentModel.class, "CommentModels/" + delete);
-                    
-                      
-                        List <UserModel> userModels = session.query(UserModel.class).whereEquals("comments",
-                         deletedModel.getId())
-                        .toList();
-                        for (UserModel userModel : userModels) {
-                            if (userModel.getComments().contains(deletedModel.getId())) {
-                                userModel.getComments().remove(deletedModel.getId());
-                            }
-                        }
-            
-                        List <GameModel> gameModels = session.query(GameModel.class).whereEquals("comments",
-                        deletedModel.getId())
-                       .toList();
-                       
-                        for (GameModel gameModel : gameModels) {
-                            if (gameModel.getComments().contains(deletedModel.getId())) {
-                                gameModel.getComments().remove(deletedModel.getId());
-                            }
-                        }
-
-                        session.delete(deletedModel);
+                        session.delete("CommentModels/" + delete);
                         session.saveChanges();
 
                     } catch (Exception e) {

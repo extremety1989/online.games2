@@ -214,8 +214,6 @@ public class PopulateData {
                     game.setPrice(price);
                     game.setAgeRestriction(age_restriction);
                     game.setCategory(category);
-                    game.setComments(new ArrayList<String>());
-                    game.setRatings(new ArrayList<String>());
                     session.store(game);
             
                     games.add(game);
@@ -244,9 +242,6 @@ public class PopulateData {
             user.setUsername(userName);
             user.setPassword(password);
             user.setCreated_at(new Date());
-            user.setComments(new ArrayList<String>());
-            user.setRatings(new ArrayList<String>());
-            user.setPurchases(new ArrayList<String>());
             session.store(user);
             users.add(user);
         }
@@ -274,23 +269,15 @@ public class PopulateData {
             purchase.setAmount(amout);
             purchase.setCurrency(currency);
             purchase.setCreated_at(new Date());
+            purchase.setUser_id(users.get(faker.random().nextInt(users.size())).getId());
             purchase.setGame_id(games.get(faker.random().nextInt(games.size())).getId());
 
             session.store(purchase);
             purchases.add(purchase);
         }   
         session.saveChanges();
-        pushPurchaseIntoUSer(session, users, purchases);
     }
 
-    public void pushPurchaseIntoUSer(IDocumentSession session, List<UserModel> users, List<PurchaseModel> purchases) {
-        for (UserModel user : users) {
-            Faker faker = new Faker();
-            String purchaseId = session.advanced().getDocumentId(purchases.get(faker.random().nextInt(purchases.size())));
-            user.getPurchases().add(purchaseId);
-        }
-        session.saveChanges();
-    }   
 
     public void createMockComment(IDocumentSession session, List<UserModel> users, List<GameModel> games) {
         List <CommentModel> comments = new ArrayList<CommentModel>();
@@ -301,24 +288,15 @@ public class PopulateData {
             CommentModel commentDoc = new CommentModel();
             commentDoc.setCreated_at(new Date());
             commentDoc.setComment(comment);
+            commentDoc.setUser_id(users.get(faker.random().nextInt(users.size())).getId());
             commentDoc.setGame_id(games.get(faker.random().nextInt(games.size())).getId());
             comments.add(commentDoc);
             session.store(commentDoc);
         }  
         session.saveChanges();
 
-        pushCommentIntoUSer(session, users, comments, games);
     }
-    public void pushCommentIntoUSer(IDocumentSession session, List<UserModel> users,
-     List<CommentModel> comments, List<GameModel> games) {
-        for (UserModel user : users) {
-            Faker faker = new Faker();
-            CommentModel comment = comments.get(faker.random().nextInt(comments.size()));
-            String commentId = session.advanced().getDocumentId(comment);
-            user.getComments().add(commentId);
-        }
-        session.saveChanges();
-    }   
+
 
     public void createMockRating(IDocumentSession session, List<UserModel> users, List<GameModel> games) {
         List <RatingModel> ratings = new ArrayList<RatingModel>();
@@ -328,23 +306,13 @@ public class PopulateData {
             Integer rating = faker.number().numberBetween(1, 5);
             RatingModel ratingDoc = new RatingModel();
             ratingDoc.setRating(rating);
+            ratingDoc.setUser_id(users.get(faker.random().nextInt(users.size())).getId());
             ratingDoc.setGame_id(games.get(faker.random().nextInt(games.size())).getId());
             session.store(ratingDoc);
             ratings.add(ratingDoc);
         } 
 
         session.saveChanges();
-        pushRatingIntoUSer(session, users, ratings);
     }
-
-    public void pushRatingIntoUSer(IDocumentSession session, List<UserModel> users, List<RatingModel> ratings) {
-        for (UserModel user : users) {
-            Faker faker = new Faker();
-            String ratingId = session.advanced().getDocumentId(ratings.get(faker.random().nextInt(ratings.size())));
-            user.getRatings().add(ratingId);
-        }
-        session.saveChanges();
-    }   
-
 
 }

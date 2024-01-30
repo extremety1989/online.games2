@@ -449,36 +449,32 @@ public class Game {
             return;
         }
 
-        if ((int) found_user.getAge() >= found_game.getAgeRestriction()){
-
-                   
-            PurchaseModel new_purchase = new PurchaseModel();
-            new_purchase.setAmount(amount);
-            new_purchase.setCurrency(currency);
-            BankModel bank = new BankModel();
-            if (bankName != null && bankNumber != null) {
-                bank.setName(bankName);
-                bank.setNumber(bankNumber);
-            }
-            new_purchase.setBank(bank);
-            new_purchase.setGame_id(found_game.getId());
-            new_purchase.setCreated_at(new Date());
-           
-            try {
-                session.store(new_purchase);
+        if ((int) found_user.getAge() <= found_game.getAgeRestriction()){
+            System.out.println("You are not old enough to purchase this game.");
+            return;   
+        }
+        PurchaseModel new_purchase = new PurchaseModel();
+        new_purchase.setAmount(amount);
+        new_purchase.setCurrency(currency);
+        BankModel bank = new BankModel();
+        if (bankName != null && bankNumber != null) {
+            bank.setName(bankName);
+            bank.setNumber(bankNumber);
+        }
+        new_purchase.setBank(bank);
+        new_purchase.setUser_id(found_user.getId());
+        new_purchase.setGame_id(found_game.getId());
+        new_purchase.setCreated_at(new Date());
        
-                System.out.println("Transaction created successfully!");
-                found_game.setTotal((int) found_game.getTotal() + 1);
-                found_user.getPurchases().add(new_purchase.getId());
-                
-                session.saveChanges();
+        try {
+            session.store(new_purchase);
+   
+            System.out.println("Transaction created successfully!");
+            found_game.setTotal((int) found_game.getTotal() + 1);
+            session.saveChanges();
 
-            } catch (Exception e) {
-                System.out.println("Transaction not created.");
-            }
-            
-        } else {
-            System.out.println("not old enough to buy this game.");
+        } catch (Exception e) {
+            System.out.println("Transaction not created.");
         }
     }
 }

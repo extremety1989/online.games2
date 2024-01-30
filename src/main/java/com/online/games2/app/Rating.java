@@ -62,11 +62,10 @@ public class Rating {
                         }
                       
                         RatingModel ratingModel = new RatingModel();
+                        ratingModel.setUser_id(userModel.getId());
                         ratingModel.setGame_id(gameModel.getId());
                         ratingModel.setRating(rating);
                         session.store(ratingModel);
-                        userModel.getRatings().add(ratingModel.getId());
-                        gameModel.getRatings().add(ratingModel.getId());
                         session.saveChanges();
                     }
 
@@ -108,29 +107,7 @@ public class Rating {
                     try (IDocumentSession session = store.openSession()){
                         System.out.print("Enter id of rating to delete: ");
                         String delete = scanner.nextLine();
-                        RatingModel deletedModel = session.load(RatingModel.class, "RatingModels/" + delete);
-                    
-                      
-                        List <UserModel> userModels = session.query(UserModel.class).whereEquals("ratings",
-                         deletedModel.getId())
-                        .toList();
-                        for (UserModel userModel : userModels) {
-                            if (userModel.getRatings().contains(deletedModel.getId())) {
-                                userModel.getRatings().remove(deletedModel.getId());
-                            }
-                        }
-            
-
-                         List <GameModel> gameModels = session.query(GameModel.class).whereEquals("ratings",
-                        deletedModel.getId())
-                       .toList();
-                       
-                        for (GameModel gameModel : gameModels) {
-                            if (gameModel.getRatings().contains(deletedModel.getId())) {
-                                gameModel.getRatings().remove(deletedModel.getId());
-                            }
-                        }
-                        session.delete(deletedModel);
+                        session.delete("RatingModels/" + delete);
                         session.saveChanges();
                     }
                 } 

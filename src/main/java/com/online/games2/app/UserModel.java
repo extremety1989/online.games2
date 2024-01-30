@@ -16,7 +16,4 @@ public class UserModel {
     private String email;
     private String password;
     private Date created_at;
-    private ArrayList<String> comments;
-    private ArrayList<String> ratings;
-    private ArrayList<String> purchases;
 }

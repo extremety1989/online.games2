@@ -9,6 +9,7 @@ import lombok.Data;
 @Data
 public class PurchaseModel {
     private String id;
+    private String user_id;
     private String game_id;
     private Date created_at;
     private Double amount;
