@@ -368,8 +368,28 @@ public class Game {
     private void purchaseAGame(Scanner scanner, IDocumentSession session) {
         System.out.print("Enter user-id or username or email: ");
         String id_or_username_or_email = scanner.nextLine();
+        UserModel found_user = session.advanced().rawQuery(UserModel.class, "from UserModels where id() = 'UserModels/" + id_or_username_or_email + "'"
+        + " or username = '" + id_or_username_or_email + "'"
+        + " or email = '" + id_or_username_or_email + "'")
+        .waitForNonStaleResults()
+        .toList()
+        .get(0);
+        if (found_user == null) {
+            System.out.println("User not found.");
+            return;
+        }
         System.out.print("Enter the game-name or game-id that he wants to purchase: ");
         String gameName_or_gameId = scanner.nextLine();
+
+        List<GameModel> results = session.advanced().rawQuery(GameModel.class, "from GameModels where id() = 'GameModels/" + gameName_or_gameId + "'"
+        + " or name = '" + gameName_or_gameId + "'")
+        .waitForNonStaleResults().toList();
+        GameModel found_game = results.get(0);
+
+        if(found_game == null){
+            System.out.println("Game not found.");
+            return;
+        }
 
         List<String> bankNames = Arrays.asList(
                 "Bank of America",
@@ -429,59 +449,36 @@ public class Game {
             return;
         }
 
-        UserModel found_user = session.advanced().rawQuery(UserModel.class, "from UserModels where id() = 'UserModels/" + id_or_username_or_email + "'"
-                + " or username = '" + id_or_username_or_email + "'"
-                + " or email = '" + id_or_username_or_email + "'")
-                .waitForNonStaleResults()
-                .toList()
-                .get(0);
-
-        if (found_user != null) {
-            List<GameModel> results = session.advanced().rawQuery(GameModel.class, "from GameModels where id() = 'GameModels/" + gameName_or_gameId + "'"
-            + " or name = '" + gameName_or_gameId + "'")
-            .waitForNonStaleResults().toList();
-            GameModel found_game = results.get(0);
-
-            if (found_game != null) {
-
-                if ((int) found_user.getAge() >= found_game.getAgeRestriction()){
+        if ((int) found_user.getAge() >= found_game.getAgeRestriction()){
 
                    
-                    PurchaseModel new_purchase = new PurchaseModel();
-                    new_purchase.setAmount(amount);
-                    new_purchase.setCurrency(currency);
-                    BankModel bank = new BankModel();
-                    if (bankName != null && bankNumber != null) {
-                        bank.setName(bankName);
-                        bank.setNumber(bankNumber);
-                    }
-                    new_purchase.setBank(bank);
-                    new_purchase.setGame_id(found_game.getId());
-                    new_purchase.setCreated_at(new Date());
-                   
-                    try {
-                        session.store(new_purchase);
-               
-                        System.out.println("Transaction created successfully!");
-                        found_game.setTotal((int) found_game.getTotal() + 1);
-                        found_user.getPurchases().add(new_purchase.getId());
-                        
-                        session.saveChanges();
-
-                    } catch (Exception e) {
-                        System.out.println("Transaction not created.");
-                    }
-                    
-                } else {
-                    System.out.println("not old enough to buy this game.");
-                }
-
-            } else {
-                System.out.println("Game not found.");
+            PurchaseModel new_purchase = new PurchaseModel();
+            new_purchase.setAmount(amount);
+            new_purchase.setCurrency(currency);
+            BankModel bank = new BankModel();
+            if (bankName != null && bankNumber != null) {
+                bank.setName(bankName);
+                bank.setNumber(bankNumber);
             }
+            new_purchase.setBank(bank);
+            new_purchase.setGame_id(found_game.getId());
+            new_purchase.setCreated_at(new Date());
+           
+            try {
+                session.store(new_purchase);
+       
+                System.out.println("Transaction created successfully!");
+                found_game.setTotal((int) found_game.getTotal() + 1);
+                found_user.getPurchases().add(new_purchase.getId());
+                
+                session.saveChanges();
 
+            } catch (Exception e) {
+                System.out.println("Transaction not created.");
+            }
+            
         } else {
-            System.out.println("user not found.");
+            System.out.println("not old enough to buy this game.");
         }
     }
 }

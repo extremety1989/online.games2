@@ -32,7 +32,8 @@ public class Purchase {
                     System.out.print("Enter id of purchase to delete: ");
                     String delete = scanner.nextLine();
                     try {
-                        PurchaseModel deletedModel = session.load(PurchaseModel.class, delete);
+                        PurchaseModel deletedModel = session.load(PurchaseModel.class, "PurchaseModels/" + delete);
+
                           List <UserModel> userModels = session.query(UserModel.class).whereEquals("purchases",
                          deletedModel.getId())
                         .toList();

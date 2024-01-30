@@ -237,7 +237,7 @@ public class User {
         System.out.println("\n");
         String value = scanner.nextLine();
         int pageSize = 5;
-        // Declare the 'results' variable
+      
         IRawDocumentQuery<UserModel> results = session.advanced()
                 .rawQuery(UserModel.class, "from UserModels where id = '" + value
                         + "' or username = '" + value + "' or email = '" + value + "'")
@@ -271,12 +271,12 @@ public class User {
                 int processed = 0;
 
                 for (String commentId : user.getComments()) {
-                    // Skip the documents as per the 'skipDocuments' value
+               
                     if (processed++ < skipDocuments) {
                         continue;
                     }
 
-                    // Load and process the comment
+               
                     CommentModel data = session.load(CommentModel.class, commentId);
                     if (data != null) {
                         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -284,7 +284,7 @@ public class User {
                         System.out.println(json);
                     }
 
-                    // Break the loop once we have processed 'pageSize' number of documents
+             
                     if (processed - skipDocuments >= pageSize) {
                         break;
                     }
@@ -333,7 +333,7 @@ public class User {
         System.out.println("\n");
         String value = scanner.nextLine();
         int pageSize = 5;
-        // Declare the 'results' variable
+    
         IRawDocumentQuery<UserModel> results = session.advanced()
                 .rawQuery(UserModel.class, "from UserModels where id = '" + value
                         + "' or username = '" + value + "' or email = '" + value + "'")
@@ -366,21 +366,20 @@ public class User {
                 int skipDocuments = (currentPage - 1) * pageSize;
                 int processed = 0;
 
-                for (String commentId : user.getRatings()) {
-                    // Skip the documents as per the 'skipDocuments' value
+                for (String ratingId : user.getRatings()) {
+              
                     if (processed++ < skipDocuments) {
                         continue;
                     }
 
-                    // Load and process the comment
-                    CommentModel data = session.load(CommentModel.class, commentId);
+                    RatingModel data = session.load(RatingModel.class, ratingId);
                     if (data != null) {
                         Gson gson = new GsonBuilder().setPrettyPrinting().create();
                         String json = gson.toJson(data);
                         System.out.println(json);
                     }
 
-                    // Break the loop once we have processed 'pageSize' number of documents
+             
                     if (processed - skipDocuments >= pageSize) {
                         break;
                     }
@@ -429,7 +428,7 @@ public class User {
         System.out.println("\n");
         String value = scanner.nextLine();
         int pageSize = 5;
-        // Declare the 'results' variable
+    
         IRawDocumentQuery<UserModel> results = session.advanced()
                 .rawQuery(UserModel.class, "from UserModels where id = '" + value
                         + "' or username = '" + value + "' or email = '" + value + "'")
@@ -462,21 +461,20 @@ public class User {
                 int skipDocuments = (currentPage - 1) * pageSize;
                 int processed = 0;
 
-                for (String commentId : user.getPurchases()) {
-                    // Skip the documents as per the 'skipDocuments' value
+                for (String purchaseId : user.getPurchases()) {
+               
                     if (processed++ < skipDocuments) {
                         continue;
                     }
 
-                    // Load and process the comment
-                    CommentModel data = session.load(CommentModel.class, commentId);
+                    
+                    PurchaseModel data = session.load(PurchaseModel.class, purchaseId);
                     if (data != null) {
                         Gson gson = new GsonBuilder().setPrettyPrinting().create();
                         String json = gson.toJson(data);
                         System.out.println(json);
                     }
 
-                    // Break the loop once we have processed 'pageSize' number of documents
                     if (processed - skipDocuments >= pageSize) {
                         break;
                     }
