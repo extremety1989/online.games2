@@ -463,10 +463,9 @@ public class Game {
                         session.store(new_purchase);
                
                         System.out.println("Transaction created successfully!");
-                        results
-                        .forEach(x -> x.setTotal((int) x.getTotal() + 1));
+                        found_game.setTotal((int) found_game.getTotal() + 1);
                         found_user.getPurchases().add(new_purchase.getId());
-             
+                        
                         session.saveChanges();
 
                     } catch (Exception e) {
