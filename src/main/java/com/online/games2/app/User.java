@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
+import org.checkerframework.checker.units.qual.s;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -201,24 +203,11 @@ public class User {
                             else if (sub_option == 6) {
                                 try (IDocumentSession session = store.openSession()){
                                     System.out.print("Enter user_id, username or email to find: ");
-                                    this.readAll(scanner, session, CommentModel.class);
+                                    this.readAllComments(scanner, session);
                                 }
                          
                             } 
 
-                            // else if (sub_option == 7) {
-                            //     try (IDocumentSession session = store.openSession()){
-                            //         System.out.print("Enter user_id, username or email to find: ");
-                            //         this.readAll(scanner, session, UserModel.class, "UserModels");
-                            //     }
-                            // } 
-
-                            // else if (sub_option == 8) {
-                            //     try (IDocumentSession session = store.openSession()){
-                            //         System.out.print("Enter user_id, username or email to find: ");
-                            //         this.readAll(scanner, session, UserModel.class, "UserModels");
-                            //     }      
-                            // } 
 
                             else if (sub_option == 0) {
                                 sub_exit = true;
@@ -231,7 +220,7 @@ public class User {
     }
 
 
-    private <T> void readAll(Scanner scanner, IDocumentSession session, Class<T> modelClass) {
+    private <T> void readAllComments(Scanner scanner, IDocumentSession session) {
 
             System.out.println("\n");
             String value = scanner.nextLine();
@@ -240,14 +229,22 @@ public class User {
             IRawDocumentQuery<UserModel> results = session.advanced().rawQuery(UserModel.class, "from UserModels where id = '" + value
                + "' or username = '" + value + "' or email = '" + value + "'")
                    .waitForNonStaleResults();
+
+            UserModel user = results.firstOrDefault();
+
+
+            if(user == null){
+                System.out.println("User not found");
+                return;
+            }
           
-            long totalDocuments = results.toList().size();
+            long totalDocuments = user.getComments().size();
 
        
             int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
-            System.out.printf("Total users: %d\n", totalDocuments);
+            System.out.printf("Total comments: %d\n", totalDocuments);
         if (totalPages == 0) {
-            System.out.println("No users found.");
+            System.out.println("No comments found.");
         }else{
             int currentPage = 1; // Start with page 1
             boolean paginating = true;
@@ -260,16 +257,14 @@ public class User {
                         "------------------------------------------------------------------------------------------------------------------------------------------");
 
                 int skipDocuments = (currentPage - 1) * pageSize;
-                results.skip(skipDocuments)
-                        .take(pageSize)
-                        .toList()
-                        .forEach(x -> {
-                            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                            String json = gson.toJson(x);
-                            System.out.println(json);
-                });
-
-
+                for (int i = (currentPage - 1); i < totalPages; i+=skipDocuments) {
+                    CommentModel data = session.load(CommentModel.class, user.getComments().get(i));
+                    if (data != null) {
+                        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                        String json = gson.toJson(data);
+                        System.out.println(json);
+                    }
+                }
                 // Pagination controls
                 System.out.println(
                         "------------------------------------------------------------------------------------------------------------------------------------------");

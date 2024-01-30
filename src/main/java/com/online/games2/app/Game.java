@@ -374,7 +374,8 @@ public class Game {
         System.out.println("[9] Royal Bank of Canada");
         System.out.println("[10] BNP Paribas");
 
-        int bankChoice = scanner.nextInt();
+        String bankChoice_string = scanner.nextLine();
+        Integer bankChoice = Integer.parseInt(bankChoice_string);
         if (0 < bankChoice && bankChoice > 10) {
             System.out.println("Invalid choice. Please try again.");
             return;
@@ -382,12 +383,17 @@ public class Game {
 
         String bankName = bankNames.get(bankChoice - 1);
         System.out.println("Enter bank number (enter to skip): ");
+
         String bankNumber_string = scanner.nextLine();
-        Integer bankNumber = Integer.parseInt(bankNumber_string);
-        if (bankNumber != null && (bankNumber < 0 || bankNumber > 999999999999L)) {
+        Long bankNumber = null;
+        if (!bankNumber_string.isEmpty()) {
+            bankNumber = Long.parseLong(bankNumber_string);
+        }
+        if (bankNumber != null && (bankNumber < 0 || bankNumber > 9999_9999_9999L)) {
             System.out.println("Invalid bank number. Please try again.");
             return;
         }
+      
         System.out.println("Enter amount: ");
         String amount_String = scanner.nextLine();
         Double amount = Double.parseDouble(amount_String);
@@ -423,11 +429,12 @@ public class Game {
                     PurchaseModel new_purchase = new PurchaseModel();
                     new_purchase.setAmount(amount);
                     new_purchase.setCurrency(currency);
-               
+                    BankModel bank = new BankModel();
                     if (bankName != null && bankNumber != null) {
-                        new_purchase.setBankName(bankName);
-                        new_purchase.setBankNumber(bankNumber);
+                        bank.setName(bankName);
+                        bank.setNumber(bankNumber);
                     }
+                    new_purchase.setBank(bank);
                     new_purchase.setGame_id(found_game.getId());
                     new_purchase.setCreated_at(new Date());
                    

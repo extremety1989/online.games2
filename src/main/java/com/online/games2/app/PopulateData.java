@@ -261,7 +261,7 @@ public class PopulateData {
         for (int i = 0; i < 50; i++) {
             Faker faker = new Faker();
             String bankName = bankNames.get(faker.random().nextInt(bankNames.size()));
-            Integer bankNumber = faker.number().numberBetween(100000000, 999999999);
+            Long bankNumber = (long) faker.number().numberBetween(100000000, 999999999);
             Double amout = prices.get(faker.random().nextInt(prices.size()));
             String currency = "EUR";
             PurchaseModel purchase = new PurchaseModel();
@@ -312,7 +312,6 @@ public class PopulateData {
         for (UserModel user : users) {
             Faker faker = new Faker();
             CommentModel comment = comments.get(faker.random().nextInt(comments.size()));
-            comment.setUser_id(user.getId());
             String commentId = session.advanced().getDocumentId(comment);
             user.getComments().add(commentId);
         }

@@ -28,33 +28,43 @@ public class Rating {
                 scanner.nextLine(); 
                 if (sub_option == 1) {
                     try (IDocumentSession session = store.openSession()){
-                        System.out.print("Enter user-id or username or email: ");
-                        String id_or_username_or_email = scanner.nextLine();
-                        System.out.print("Enter the game-name or game-id that he wants to rate: ");
+                        System.out.print("Enter user id or username or email: ");
                         String gameName_or_gameId = scanner.nextLine();
+                        UserModel userModel = session.query(UserModel.class)
+                        .whereEquals("id", gameName_or_gameId)
+                        .orElse()
+                        .whereEquals("username", gameName_or_gameId)
+                        .orElse()
+                        .whereEquals("email", gameName_or_gameId)
+                        .firstOrDefault();
+                        if (userModel == null) {
+                            System.out.println("User not found.");
+                            break;
+                        }
+                        System.out.print("Enter id or name of game: ");
+                        String game = scanner.nextLine();
+                        GameModel gameModel = session.query(GameModel.class)
+                        .whereEquals("id", game)
+                        .orElse()
+                        .whereEquals("name", game)
+                        .firstOrDefault();
+    
+                        if(gameModel == null) {
+                            System.out.println("Game not found.");
+                            break;
+                        }
                         System.out.print("Enter rating: (1-5)");
                         Integer rating = scanner.nextInt();
                         if (rating < 1 || rating > 5) {
                             System.out.println("Invalid rating. Please try again.");
                             break;
                         }
-                        UserModel find_user = session.query(UserModel.class).whereEquals("id or username or email", 
-                        id_or_username_or_email).firstOrDefault();
-                        if (find_user == null) {
-                            System.out.println("User not found. Please try again.");
-                            break;
-                        }
-                        GameModel find_game = session.query(GameModel.class).whereEquals("name or id",
-                         gameName_or_gameId).firstOrDefault();
-                        if (find_game == null) {
-                            System.out.println("Game not found. Please try again.");
-                            break;
-                        }
+                      
                         RatingModel ratingModel = new RatingModel();
-                        ratingModel.setGame_id(find_game.getId());
-                        ratingModel.setUser_id(find_user.getId());
+                        ratingModel.setGame_id(gameModel.getId());
                         ratingModel.setRating(rating);
                         session.store(ratingModel);
+                        userModel.getRatings().add(ratingModel.getId());
                         session.saveChanges();
                     }
 

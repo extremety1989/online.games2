@@ -32,17 +32,39 @@ public class Comment {
                 try (IDocumentSession session = store.openSession())
                 {
                     System.out.print("Enter id or username or email of user: ");
-                    String id_or_username_or_email = scanner.nextLine();
-                    System.out.print("Enter name or id of game: ");
-                    String gameName_or_gameId = scanner.nextLine();
+                    String user = scanner.nextLine();
+
+                    UserModel userModel = session.query(UserModel.class)
+                    .whereEquals("id", user)
+                    .orElse()
+                    .whereEquals("username", user)
+                    .orElse()
+                    .whereEquals("email", user)
+                    .firstOrDefault();
+                    if (userModel == null) {
+                        System.out.println("User not found.");
+                        break;
+                    }
+                    System.out.print("Enter id or name of game: ");
+                    String game = scanner.nextLine();
+                    GameModel gameModel = session.query(GameModel.class)
+                    .whereEquals("id", game)
+                    .orElse()
+                    .whereEquals("name", game)
+                    .firstOrDefault();
+
+                    if(gameModel == null) {
+                        System.out.println("Game not found.");
+                        break;
+                    }
                     System.out.print("Enter comment: ");
                     String comment = scanner.nextLine();
     
                     CommentModel commentModel = new CommentModel();
                     commentModel.setComment(comment);
-                    commentModel.setGame_id(gameName_or_gameId);
-                    commentModel.setUser_id(id_or_username_or_email);
+                    commentModel.setGame_id(gameModel.getId());
                     commentModel.setCreated_at(new Date());
+                    userModel.getComments().add(commentModel.getId());
                     session.store(commentModel);
                     session.saveChanges();
                 }

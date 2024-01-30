@@ -35,7 +35,8 @@ public class Reader {
                             "----------------------------------------------------------------------------");
 
                     int skipDocuments = (currentPage - 1) * pageSize;
-                    results
+                    session.advanced().rawQuery(modelClass, "from "+modelClassString)
+                            .waitForNonStaleResults()
                             .skip(skipDocuments)
                             .take(pageSize)
                             .toList()
