@@ -65,6 +65,7 @@ public class Rating {
                         ratingModel.setRating(rating);
                         session.store(ratingModel);
                         userModel.getRatings().add(ratingModel.getId());
+                        gameModel.getRatings().add(ratingModel.getId());
                         session.saveChanges();
                     }
 

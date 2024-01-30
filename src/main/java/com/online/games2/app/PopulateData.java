@@ -214,6 +214,8 @@ public class PopulateData {
                     game.setPrice(price);
                     game.setAgeRestriction(age_restriction);
                     game.setCategory(category);
+                    game.setComments(new ArrayList<String>());
+                    game.setRatings(new ArrayList<String>());
                     session.store(game);
             
                     games.add(game);
