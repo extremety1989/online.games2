@@ -38,9 +38,27 @@ public class Game {
                 try (IDocumentSession session = store.openSession()){
                     System.out.print("Enter name: ");
                     String name = scanner.nextLine();
+
+                    GameModel game = new GameModel();
+                    if (session.advanced().rawQuery(GameModel.class, "from GameModels where name = '" + name + "'")
+                            .waitForNonStaleResults()
+                            .toList()
+                            .size() > 0) {
+                        System.out.println("Game already exists.");
+                        return;
+                    }
     
                     System.out.print("Enter category: ");
                     String category = scanner.nextLine();
+
+                         
+                    if (session.advanced().rawQuery(GameModel.class, "from CategoryModels where name = '" + name + "'")
+                    .waitForNonStaleResults()
+                    .toList()
+                            .size() < 1) {
+                        System.out.println("Category does not exists.");
+                      return;
+                    }
     
                     System.out.print("Enter price: ");
                     String price_string = scanner.nextLine();
@@ -60,28 +78,12 @@ public class Game {
                     }
                     Integer age_restriction = Integer.parseInt(age_restriction_string);
                  
-                    GameModel game = new GameModel();
-                    if (session.advanced().rawQuery(GameModel.class, "from GameModels where name = '" + name + "'")
-                            .waitForNonStaleResults()
-                            .toList()
-                            .size() > 0) {
-                        System.out.println("Game already exists.");
-                        return;
-                    }
-      
-                    //find category
-                    GameModel GameModel = session.advanced().rawQuery(GameModel.class, "from GameModels where category.name = '" + category + "'")
-                            .waitForNonStaleResults()
-                            .toList()
-                            .get(0);
-                    if (GameModel != null){
-                        System.out.println("Category not found.");
-                        return;
-                    }
+
+ 
                     game.setName(name);
                     game.setPrice(price);
                     game.setAgeRestriction(age_restriction);
-                    game.setCategory((CategoryModel) session.advanced().rawQuery(CategoryModel.class, "from CategoryModels where name = '" + category + "'"));
+                    game.setCategory(categoryModel);
                     game.setTotal(0);
                     session.store(game);
                     session.saveChanges();
