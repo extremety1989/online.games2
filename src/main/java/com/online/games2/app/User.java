@@ -273,6 +273,7 @@ public class User {
             
                
                 session.advanced().rawQuery(ModelClass, "from "+Model+" where user_id = '"+found_user.getId()+"'")
+                            .waitForNonStaleResults()
                             .skip(skipDocuments)
                             .take(pageSize)
                             .toList()
