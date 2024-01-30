@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import net.ravendb.client.documents.session.IDocumentSession;
+import net.ravendb.client.documents.session.IRawDocumentQuery;
 
 public class Reader {
 
@@ -13,8 +14,9 @@ public class Reader {
         {
             System.out.println("\n");
             int pageSize = 5;
-            long totalDocuments = session.advanced().rawQuery(modelClass, "from "+modelClassString)
-                    .waitForNonStaleResults()
+            IRawDocumentQuery<T> results = session.advanced().rawQuery(modelClass, "from "+modelClassString)
+            .waitForNonStaleResults();
+            long totalDocuments = results
                     .toList()
                     .size();
             session.saveChanges();
@@ -33,8 +35,7 @@ public class Reader {
                             "----------------------------------------------------------------------------");
 
                     int skipDocuments = (currentPage - 1) * pageSize;
-                    session.advanced().rawQuery(modelClass, "from "+modelClassString)
-                            .waitForNonStaleResults()
+                    results
                             .skip(skipDocuments)
                             .take(pageSize)
                             .toList()
@@ -43,7 +44,7 @@ public class Reader {
                                 String json = gson.toJson(x);
                                 System.out.println(json);
                             });
-                    session.saveChanges();
+                    
                     // Pagination controls
                     System.out.println(
                             "----------------------------------------------------------------------------");

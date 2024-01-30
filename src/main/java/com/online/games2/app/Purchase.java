@@ -2,6 +2,9 @@ package com.online.games2.app;
 
 import java.util.Scanner;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import net.ravendb.client.documents.DocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
 
@@ -16,7 +19,8 @@ public class Purchase {
             System.out.println("\n");
             System.out.println("Choose an operation:");
             System.out.println("1: Delete purchase");
-            System.out.println("2: List All purchases");
+            System.out.println("2: View purchase");
+            System.out.println("3: List All purchases");
             System.out.println("0: Return to main menu");
             System.out.print("Enter option: ");
 
@@ -35,9 +39,23 @@ public class Purchase {
                 }
 
             } 
-            
-
             else if (sub_option == 2) {
+                try (IDocumentSession session = store.openSession()){
+                    System.out.print("Enter id of purchase to view: ");
+                    String id = scanner.nextLine();
+                    try {
+                        PurchaseModel purchase = session.load(PurchaseModel.class, "PurchaseModels/" + id);
+                           Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    String json = gson.toJson(purchase);
+                    System.out.println(json);
+                    } catch (Exception e) {
+                        System.out.println("purchase not found.");
+                    }
+                }
+         
+            } 
+
+            else if (sub_option == 3) {
                 try (IDocumentSession session = store.openSession()){
                     reader.read(scanner, session, PurchaseModel.class, "PurchaseModels");
                 }

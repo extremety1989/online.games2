@@ -2,6 +2,9 @@ package com.online.games2.app;
 
 import java.util.Scanner;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import net.ravendb.client.documents.DocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
 
@@ -14,8 +17,10 @@ public class Rating {
                 System.out.println("\n");
                 System.out.println("Choose an operation:");
                 System.out.println("1: Create rating");
-                System.out.println("2: Delete rating");
-                System.out.println("3: List All ratings");
+                System.out.println("2: View rating");
+                System.out.println("3: Update rating");
+                System.out.println("4: Delete rating");
+                System.out.println("5: List All ratings");
                 System.out.println("0: Return to main menu");
                 System.out.print("Enter option: ");
 
@@ -56,14 +61,46 @@ public class Rating {
                 }
                 else if (sub_option == 2) {
                     try (IDocumentSession session = store.openSession()){
-                        System.out.print("Enter id of rating to delete: ");
-                        String delete = scanner.nextLine();
-                        session.delete(delete);
-                        session.saveChanges();
+                        System.out.print("Enter id of rating to view: ");
+                        String id = scanner.nextLine();
+                        try {
+                            RatingModel rating = session.load(RatingModel.class, "RatingModels/" + id);
+                            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                            String json = gson.toJson(rating);
+                            System.out.println(json);
+                        } catch (Exception e) {
+                            System.out.println("Rating not found.");
+                        }
                     }
-
                 } 
                 else if (sub_option == 3) {
+                    try (IDocumentSession session = store.openSession()){
+                        System.out.print("Enter id of rating to update: ");
+                        String id = scanner.nextLine();
+                        try {
+                            RatingModel rating = session.load(RatingModel.class, "RatingModels/" + id);
+                            System.out.print("Enter new rating: ");
+                            Integer newrating = scanner.nextInt();
+                            if (newrating < 1 || newrating > 5) {
+                                System.out.println("Invalid rating. Please try again.");
+                                break;
+                            }
+                            rating.setRating(newrating);
+                            session.saveChanges();
+                        } catch (Exception e) {
+                            System.out.println("Rating not found.");
+                        }
+                    }
+                } 
+                else if (sub_option == 4) {
+                    try (IDocumentSession session = store.openSession()){
+                        System.out.print("Enter id of rating to delete: ");
+                        String delete = scanner.nextLine();
+                        session.delete("RatingModels/" + delete);
+                        session.saveChanges();
+                    }
+                } 
+                else if (sub_option == 5) {
                     try (IDocumentSession session = store.openSession()){
                         reader.read(scanner, session, RatingModel.class, "RatingModels");
                     }

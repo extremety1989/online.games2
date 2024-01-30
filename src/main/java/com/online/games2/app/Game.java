@@ -10,6 +10,7 @@ import com.google.gson.GsonBuilder;
 
 import net.ravendb.client.documents.DocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
+import net.ravendb.client.documents.session.IRawDocumentQuery;
 
 public class Game {
     public void run(Scanner scanner, DocumentStore store, Reader reader){
@@ -21,11 +22,12 @@ public class Game {
             System.out.println("Choose an operation:");
             System.out.println("1: Create game");
             System.out.println("2: Update game");
-            System.out.println("3: Delete game");
-            System.out.println("4: List All games");
-            System.out.println("5: List All games by category");
-            System.out.println("6: List All games by price");
-            System.out.println("7: Purchase a game");
+            System.out.println("3: View game");
+            System.out.println("4: Delete game");
+            System.out.println("5: List All games");
+            System.out.println("6: List All games by category");
+            System.out.println("7: List All games by price");
+            System.out.println("8: Purchase a game");
             System.out.println("0: Return to main menu");
             System.out.print("Enter option: ");
 
@@ -75,6 +77,24 @@ public class Game {
             }
             else if (sub_option == 2) {
                 try (IDocumentSession session = store.openSession()){
+                  
+                    System.out.print("Enter id to view: ");
+                    String id = scanner.nextLine();
+
+                    GameModel game = session.load(GameModel.class, "GameModels/" + id);
+                    if (game == null) {
+                        System.out.println("Game not found.");
+                        return;
+                    }
+
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    String json = gson.toJson(game);
+                    System.out.println(json);
+                }
+                
+            } 
+            else if (sub_option == 3) {
+                try (IDocumentSession session = store.openSession()){
                     System.out.print(
                         "Enter game-id or game-name to update (or press enter to skip): ");
 
@@ -121,7 +141,8 @@ public class Game {
                 session.saveChanges();
                 }
 
-            } else if (sub_option == 3) {
+            } 
+            else if (sub_option == 4) {
                 try (IDocumentSession session = store.openSession()){
                                     // Delete a game
                     System.out.print("Enter id or name of game to delete: ");
@@ -135,26 +156,28 @@ public class Game {
                     session.saveChanges();
                 }
                 
-            } else if (sub_option == 4) {
+            } 
+            
+            else if (sub_option == 5) {
                 try (IDocumentSession session = store.openSession()){
                     reader.read(scanner, session, GameModel.class, "GameModels"); 
                 }
           
 
-            }else if (sub_option == 5) {
+            }else if (sub_option == 6) {
                 try (IDocumentSession session = store.openSession())
                 {
                     System.out.println("Enter category: ");
                     this.findByCategory(scanner, session);
                 }
      
-            } else if (sub_option == 6) {
+            } else if (sub_option == 7) {
                 try (IDocumentSession session = store.openSession())
                 {
                     this.findByPrice(scanner, session);
                 }
           
-            } else if (sub_option == 7) {
+            } else if (sub_option == 8) {
                 try (IDocumentSession session = store.openSession())
                 {
                     this.purchaseAGame(scanner, session);
@@ -174,9 +197,10 @@ public class Game {
         String category = scanner.nextLine();
         System.out.println("\n");
         int pageSize = 5;
-        long totalDocuments = session.advanced().rawQuery(GameModel.class, 
+        IRawDocumentQuery<GameModel> results = session.advanced().rawQuery(GameModel.class, 
         "from GameModels where category.name = '" + category + "'")
-                .waitForNonStaleResults()
+                .waitForNonStaleResults();
+        long totalDocuments = results
                 .toList()
                 .size();
         int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
@@ -194,8 +218,7 @@ public class Game {
                         "----------------------------------------------------------------------------");
 
                 int skipDocuments = (currentPage - 1) * pageSize;
-                session.advanced().rawQuery(GameModel.class, "from GameModels where category.name = '" + category + "'")
-                        .waitForNonStaleResults()
+                results
                         .skip(skipDocuments)
                         .take(pageSize)
                         .toList()
@@ -252,8 +275,9 @@ public class Game {
         Double maxPrice = Double.parseDouble(maxPrice_string);
         System.out.println("\n");
         int pageSize = 5;
-        long totalDocuments = session.advanced().rawQuery(GameModel.class, "from GameModels where price >= " + minPrice + " and price <= " + maxPrice)
-                .waitForNonStaleResults()
+        IRawDocumentQuery<GameModel> results = session.advanced().rawQuery(GameModel.class, "from GameModels where price >= " + minPrice + " and price <= " + maxPrice)
+        .waitForNonStaleResults();
+        long totalDocuments = results
                 .toList()
                 .size();
         int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
@@ -272,8 +296,7 @@ public class Game {
                         "----------------------------------------------------------------------------");
 
                 int skipDocuments = (currentPage - 1) * pageSize;
-                session.advanced().rawQuery(GameModel.class, "from GameModels where price >= " + minPrice + " and price <= " + maxPrice)
-                        .waitForNonStaleResults()
+                results
                         .skip(skipDocuments)
                         .take(pageSize)
                         .toList()
@@ -387,12 +410,10 @@ public class Game {
                 .get(0);
 
         if (found_user != null) {
-
-            GameModel found_game = session.advanced().rawQuery(GameModel.class, "from GameModels where id() = 'GameModels/" + gameName_or_gameId + "'"
-                    + " or name = '" + gameName_or_gameId + "'")
-                    .waitForNonStaleResults()
-                    .toList()
-                    .get(0);
+            List<GameModel> results = session.advanced().rawQuery(GameModel.class, "from GameModels where id() = 'GameModels/" + gameName_or_gameId + "'"
+            + " or name = '" + gameName_or_gameId + "'")
+            .waitForNonStaleResults().toList();
+            GameModel found_game = results.get(0);
 
             if (found_game != null) {
 
@@ -414,10 +435,7 @@ public class Game {
                         session.store(new_purchase);
                         session.saveChanges();
                         System.out.println("Transaction created successfully!");
-                        session.advanced().rawQuery(GameModel.class, "from GameModels where id() = 'GameModels/" + gameName_or_gameId + "'"
-                        + " or name = '" + gameName_or_gameId + "'")
-                        .waitForNonStaleResults()
-                        .toList()
+                        results
                         .forEach(x -> x.setTotal((int) x.getTotal() + 1));
                         found_user.getPurchases().add(new_purchase.getId());
              

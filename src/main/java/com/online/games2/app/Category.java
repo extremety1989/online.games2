@@ -1,6 +1,8 @@
 package com.online.games2.app;
 
 import java.util.Scanner;
+
+import com.github.javafaker.Company;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -18,9 +20,10 @@ public class Category {
             System.out.println("\n");
             System.out.println("Choose an operation:");
             System.out.println("1: Create category");
-            System.out.println("2: Update category");
-            System.out.println("3: Delete category");
-            System.out.println("4: List All categories");
+            System.out.println("2: View category");
+            System.out.println("3: Update category");
+            System.out.println("4: Delete category");
+            System.out.println("5: List All categories");
             System.out.println("0: Return to main menu");
             System.out.print("Enter option: ");
 
@@ -51,10 +54,33 @@ public class Category {
                     System.out.println("Category created successfully!");
                 }
 
-            } else if (sub_option == 2) {
+            } 
+
+            else if (sub_option == 2) {
+                try (IDocumentSession session = store.openSession()) {
+                    System.out.print("Enter id of category to view: ");
+                    String id = scanner.nextLine();
+                    if (id.isEmpty()) {
+                        System.out.println("Please enter the field.");
+                        return;
+                    }
+    
+                    CategoryModel category = session.load(CategoryModel.class, "CategoryModels/" + id);
+                    if (category == null) {
+                        System.out.println("Category not found.");
+                        return;
+                    }
+
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    String json = gson.toJson(category);
+                    System.out.println(json);
+                }
+
+            } 
+            else if (sub_option == 3) {
                 try (IDocumentSession session = store.openSession()){
                     System.out.print(
-                        "Enter category-id or category-name: ");
+                        "Enter category id to update: ");
 
                 String update = scanner.nextLine();
 
@@ -63,38 +89,34 @@ public class Category {
 
                     if (!newName.isEmpty()) {
 
-                        session.advanced()
-                                .rawQuery(CategoryModel.class,
-                                        "from CategoryModels where id() = 'CategoryModels/1" + update + "'"
-                                                + " or name = '" + update + "'")
-                                .waitForNonStaleResults()
-                                .toList()
-                                .forEach(x -> x.setName(newName));
-
+                        CategoryModel category = session.load(CategoryModel.class, "CategoryModels/" + update);
+                        if (category == null) {
+                            System.out.println("Category not found.");
+                            return;
+                        }
+                        category.setName(newName);
                         session.saveChanges();
+                        System.out.println("Category updated successfully!");
                     }
                 }
 
-            } else if (sub_option == 3) {
+            } 
+            else if (sub_option == 4) {
                 try (IDocumentSession session = store.openSession()) {
-                    System.out.print("Enter id or name of category to delete: ");
+                    System.out.print("Enter id of category to delete: ");
                     String delete = scanner.nextLine();
                     if (delete.isEmpty()) {
                         System.out.println("Please enter the field.");
                         return;
                     }
     
-                    session.advanced()
-                            .rawQuery(CategoryModel.class,
-                                    "from CategoryModels where id() = 'CategoryModels/" + delete + "'"
-                                            + " or name = '" + delete + "'")
-                            .waitForNonStaleResults()
-                            .toList()
-                            .forEach(x -> session.delete(x));
+                    session.delete("CategoryModels/" + delete);
                     session.saveChanges();
                 }
 
-            } else if (sub_option == 4) {
+            } 
+            
+            else if (sub_option == 5) {
                 try (IDocumentSession session = store.openSession()){
                     reader.read(scanner, session, CategoryModel.class, "CategoryModels");
                 }
