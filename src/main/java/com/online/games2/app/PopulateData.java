@@ -305,7 +305,7 @@ public class PopulateData {
             Faker faker = new Faker();
             Integer rating = faker.number().numberBetween(1, 5);
             RatingModel ratingDoc = new RatingModel();
-            ratingDoc.setRating(rating);
+            ratingDoc.setScore(rating);
             ratingDoc.setUser_id(users.get(faker.random().nextInt(users.size())).getId());
             ratingDoc.setGame_id(games.get(faker.random().nextInt(games.size())).getId());
             session.store(ratingDoc);

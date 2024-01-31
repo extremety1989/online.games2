@@ -39,6 +39,12 @@ public class Category {
                         System.out.println("Please enter the field.");
                         return;
                     }
+                    System.out.print("Enter description: ");
+                    String description = scanner.nextLine();
+                    if (description.isEmpty()) {
+                        System.out.println("Please enter the field.");
+                        return;
+                    }
                     CategoryModel category = new CategoryModel();
                     if (session.advanced().rawQuery(CategoryModel.class, "from CategoryModels where name = '" + name + "'")
                             .waitForNonStaleResults()
@@ -48,6 +54,7 @@ public class Category {
                         return;
                     }
                     category.setName(name);
+                    category.setDescription(description);
                     session.store(category);
                     session.saveChanges();
     
@@ -79,25 +86,34 @@ public class Category {
             } 
             else if (sub_option == 3) {
                 try (IDocumentSession session = store.openSession()){
+     
                     System.out.print(
                         "Enter category id to update: ");
 
                 String update = scanner.nextLine();
-
+                CategoryModel category = session.load(CategoryModel.class, "CategoryModels/" + update);
+                if (category == null) {
+                    System.out.println("Category not found.");
+                    return;
+                }
                 System.out.print("Enter new name: ");
                 String newName = scanner.nextLine();
-
+                
                     if (!newName.isEmpty()) {
 
-                        CategoryModel category = session.load(CategoryModel.class, "CategoryModels/" + update);
-                        if (category == null) {
-                            System.out.println("Category not found.");
-                            return;
-                        }
+                     
+  
                         category.setName(newName);
-                        session.saveChanges();
-                        System.out.println("Category updated successfully!");
+           
                     }
+                    System.out.print("Enter new description: ");
+                    String newDescription = scanner.nextLine();
+                    if (!newDescription.isEmpty()) {
+                        category.setDescription(newDescription);
+                    }
+
+                    session.saveChanges();
+                    System.out.println("Category updated successfully!");
                 }
 
             } 

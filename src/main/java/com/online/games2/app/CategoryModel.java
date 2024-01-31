@@ -7,4 +7,5 @@ import lombok.Data;
 public class CategoryModel {
     private String id;
     private String name;
+    private String description;
 }

@@ -64,7 +64,7 @@ public class Rating {
                         RatingModel ratingModel = new RatingModel();
                         ratingModel.setUser_id(userModel.getId());
                         ratingModel.setGame_id(gameModel.getId());
-                        ratingModel.setRating(rating);
+                        ratingModel.setScore(rating);
                         session.store(ratingModel);
                         session.saveChanges();
                     }
@@ -96,7 +96,7 @@ public class Rating {
                                 System.out.println("Invalid rating. Please try again.");
                                 break;
                             }
-                            rating.setRating(newrating);
+                            rating.setScore(newrating);
                             session.saveChanges();
                         } catch (Exception e) {
                             System.out.println("Rating not found.");

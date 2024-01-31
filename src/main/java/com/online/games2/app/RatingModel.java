@@ -10,6 +10,6 @@ public class RatingModel {
     private String id;
     private String user_id;
     private String game_id;
-    private int rating;
+    private int score;
     private Date created_at;
 }
