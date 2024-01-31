@@ -41,6 +41,19 @@ public class Game {
                     System.out.print("Enter name: ");
                     String name = scanner.nextLine();
 
+                    if(name.isEmpty()){
+                        System.out.println("Please enter the field.");
+                        return;
+                    }
+
+                    System.out.print("Enter description: ");
+                    String description = scanner.nextLine();
+
+                    if(description.isEmpty()){
+                        System.out.println("Please enter the field.");
+                        return;
+                    }
+
                     GameModel game = new GameModel();
                     if (session.advanced().rawQuery(GameModel.class, "from GameModels where name = '" + name + "'")
                             .waitForNonStaleResults()
@@ -84,6 +97,7 @@ public class Game {
 
  
                     game.setName(name);
+                    game.setDescription(description);
                     game.setPrice(price);
                     game.setAgeRestriction(age_restriction);
                     game.setCategory(categoryModel);
@@ -122,6 +136,26 @@ public class Game {
                 GameModel gameModel = session.advanced().rawQuery(GameModel.class, 
                 "from GameModels where id() = 'GameModels/" + update + "'"
                 + " or name = '" + update + "'").toList().get(0);
+
+                if (gameModel == null) {
+                    System.out.println("Game not found.");
+                    return;
+                }
+
+                System.out.print("Enter new name: ");
+                String newName = scanner.nextLine();
+
+                if (!newName.isEmpty()) {
+                    gameModel.setName(newName);
+                }
+
+                System.out.print("Enter new description: ");
+                String newDescription = scanner.nextLine();
+
+                if (!newDescription.isEmpty()) {
+                    gameModel.setDescription(newDescription);
+                }
+
 
 
                 System.out.print("Enter new category: ");
@@ -423,14 +457,10 @@ public class Game {
         }
 
         String bankName = bankNames.get(bankChoice - 1);
-        System.out.println("Enter bank number (enter to skip): ");
+        System.out.println("Enter bank number (12length): ");
 
-        String bankNumber_string = scanner.nextLine();
-        Long bankNumber = null;
-        if (!bankNumber_string.isEmpty()) {
-            bankNumber = Long.parseLong(bankNumber_string);
-        }
-        if (bankNumber != null && (bankNumber < 0 || bankNumber > 9999_9999_9999L)) {
+        String bankNumber = scanner.nextLine();
+        if (bankNumber.isEmpty() || bankNumber.length() != 12) {
             System.out.println("Invalid bank number. Please try again.");
             return;
         }

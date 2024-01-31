@@ -39,12 +39,7 @@ public class Category {
                         System.out.println("Please enter the field.");
                         return;
                     }
-                    System.out.print("Enter description: ");
-                    String description = scanner.nextLine();
-                    if (description.isEmpty()) {
-                        System.out.println("Please enter the field.");
-                        return;
-                    }
+
                     CategoryModel category = new CategoryModel();
                     if (session.advanced().rawQuery(CategoryModel.class, "from CategoryModels where name = '" + name + "'")
                             .waitForNonStaleResults()
@@ -54,7 +49,6 @@ public class Category {
                         return;
                     }
                     category.setName(name);
-                    category.setDescription(description);
                     session.store(category);
                     session.saveChanges();
     
@@ -105,11 +99,6 @@ public class Category {
   
                         category.setName(newName);
            
-                    }
-                    System.out.print("Enter new description: ");
-                    String newDescription = scanner.nextLine();
-                    if (!newDescription.isEmpty()) {
-                        category.setDescription(newDescription);
                     }
 
                     session.saveChanges();

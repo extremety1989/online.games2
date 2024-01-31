@@ -206,11 +206,13 @@ public class PopulateData {
         for (CategoryModel category : categories) {
                 for (int i = 0; i < 10; i++) {
                     String name = gameNames.get(faker.random().nextInt(gameNames.size()));
+                    String description = faker.lorem().sentence();
                     Double price = prices.get(faker.random().nextInt(prices.size()));
                     Integer age_restriction = faker.number().numberBetween(9, 18);
                    
                     GameModel game = new GameModel();
                     game.setName(name);
+                    game.setDescription(description);
                     game.setPrice(price);
                     game.setAgeRestriction(age_restriction);
                     game.setCategory(category);
@@ -258,7 +260,7 @@ public class PopulateData {
         for (int i = 0; i < 1000; i++) {
             Faker faker = new Faker();
             String bankName = bankNames.get(faker.random().nextInt(bankNames.size()));
-            Long bankNumber = (long) faker.number().numberBetween(100000000, 999999999);
+            String bankNumber = String.valueOf(faker.number().numberBetween(100000000, 999999999));
             Double amout = prices.get(faker.random().nextInt(prices.size()));
             String currency = "EUR";
             PurchaseModel purchase = new PurchaseModel();

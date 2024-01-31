@@ -7,6 +7,7 @@ import lombok.Data;
 public class GameModel {
     private String id;
     private String name;
+    private String description;
     private CategoryModel category;
     private Double price;
     private int ageRestriction;

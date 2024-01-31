@@ -7,5 +7,5 @@ import lombok.Data;
 public class BankModel {
     private String id;
     private String name;
-    private Long number;
+    private String number;
 }
