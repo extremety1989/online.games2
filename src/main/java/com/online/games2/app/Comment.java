@@ -63,7 +63,7 @@ public class Comment {
                     String comment = scanner.nextLine();
     
                     CommentModel commentModel = new CommentModel();
-                    commentModel.setComment(comment);
+                    commentModel.setText(comment);
                     commentModel.setUser_id(userModel.getId());
                     commentModel.setGame_id(gameModel.getId());
                     commentModel.setCreated_at(new Date());
@@ -98,7 +98,7 @@ public class Comment {
                         CommentModel comment = session.load(CommentModel.class, "CommentModels/" + id);
                         System.out.print("Enter new comment: ");
                         String newcomment = scanner.nextLine();
-                        comment.setComment(newcomment);
+                        comment.setText(newcomment);
                         session.saveChanges();
                     } catch (Exception e) {
                         System.out.println("Comment not found.");

@@ -287,7 +287,7 @@ public class PopulateData {
             String comment = faker.lorem().sentence();
             CommentModel commentDoc = new CommentModel();
             commentDoc.setCreated_at(new Date());
-            commentDoc.setComment(comment);
+            commentDoc.setText(comment);
             commentDoc.setUser_id(users.get(faker.random().nextInt(users.size())).getId());
             commentDoc.setGame_id(games.get(faker.random().nextInt(games.size())).getId());
             comments.add(commentDoc);
