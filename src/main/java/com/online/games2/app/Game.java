@@ -457,7 +457,7 @@ public class Game {
         }
 
         String bankName = bankNames.get(bankChoice - 1);
-        System.out.println("Enter bank number (12length): ");
+        System.out.println("Enter bank number (12-length long): ");
 
         String bankNumber = scanner.nextLine();
         if (bankNumber.isEmpty() || bankNumber.length() != 12) {

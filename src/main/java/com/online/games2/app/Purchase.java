@@ -1,6 +1,5 @@
 package com.online.games2.app;
 
-import java.util.List;
 import java.util.Scanner;
 
 import com.google.gson.Gson;
