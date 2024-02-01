@@ -86,7 +86,7 @@ public class Game {
 
                     Double price = Double.parseDouble(price_string);
     
-                    System.out.print("Enter age limit: ");
+                    System.out.print("Enter age restriction: ");
                     String age_restriction_string = scanner.nextLine();
                     if(age_restriction_string.isEmpty()){
                         System.out.println("Please enter the field.");
@@ -169,7 +169,7 @@ public class Game {
                 }
           
 
-                System.out.print("Enter new age limit: ");
+                System.out.print("Enter new age restriction: ");
                 String newAgeLimit_string = scanner.nextLine();
                 Integer newAgeLimit = null;
                 if (!newAgeLimit_string.isEmpty()) {
