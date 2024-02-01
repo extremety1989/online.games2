@@ -91,7 +91,7 @@ public class User {
                     String id_or_username_or_email = scanner.nextLine();
 
                     UserModel found_user = session.advanced().rawQuery(UserModel.class,
-                            "from UserModels where id = '" + id_or_username_or_email
+                            "from UserModels where id() = '" + id_or_username_or_email
                                     + "' or username = '" + id_or_username_or_email + "' or email = '"
                                     + id_or_username_or_email + "'")
                             .firstOrDefault();
@@ -177,7 +177,7 @@ public class User {
                     String delete = scanner.nextLine();
 
                     UserModel found_user = session.advanced().rawQuery(UserModel.class,
-                            "from UserModels where id = '" + delete
+                            "from UserModels where id() = '" + delete
                                     + "' or username = '" + delete + "' or email = '" + delete + "'")
                             .firstOrDefault();
 
@@ -238,7 +238,7 @@ public class User {
         int pageSize = 5;
       
         UserModel found_user = session.advanced().rawQuery(UserModel.class,
-        "from UserModels where id = '" + value
+        "from UserModels where id() = '" + value
                 + "' or username = '" + value + "' or email = '"
                 + value + "'")
         .firstOrDefault();
@@ -272,7 +272,8 @@ public class User {
                 int skipDocuments = (currentPage - 1) * pageSize;
             
                
-                session.advanced().rawQuery(ModelClass, "from "+Model+" where user_id = '"+found_user.getId()+"'")
+                session.query(ModelClass)
+                            .whereEquals("user_id", found_user.getId())
                             .waitForNonStaleResults()
                             .skip(skipDocuments)
                             .take(pageSize)
