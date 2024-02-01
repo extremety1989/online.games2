@@ -6,15 +6,10 @@ import java.util.Arrays;
 
 import java.util.List;
 
-import javax.print.Doc;
-
-import org.checkerframework.checker.units.qual.s;
 
 import com.github.javafaker.Faker;
 
 import net.ravendb.client.documents.DocumentStore;
-import net.ravendb.client.documents.operations.DeleteByQueryOperation;
-import net.ravendb.client.documents.queries.IndexQuery;
 import net.ravendb.client.documents.session.IDocumentSession;
 
 
