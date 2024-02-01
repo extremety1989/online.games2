@@ -238,7 +238,7 @@ public class User {
         int pageSize = 5;
       
         UserModel found_user = session.advanced().rawQuery(UserModel.class,
-        "from UserModels where id() = '" + value
+        "from UserModels where id() = '"+Model+"" + value
                 + "' or username = '" + value + "' or email = '"
                 + value + "'")
         .firstOrDefault();
