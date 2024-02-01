@@ -91,7 +91,7 @@ public class User {
                     String id_or_username_or_email = scanner.nextLine();
 
                     UserModel found_user = session.advanced().rawQuery(UserModel.class,
-                            "from UserModels where id() = '" + id_or_username_or_email
+                            "from UserModels where id() = 'UserModels/" + id_or_username_or_email
                                     + "' or username = '" + id_or_username_or_email + "' or email = '"
                                     + id_or_username_or_email + "'")
                             .firstOrDefault();
@@ -127,7 +127,7 @@ public class User {
                     String newPassword = scanner.nextLine();
 
                     UserModel found_user = session.advanced().rawQuery(UserModel.class,
-                            "from UserModels where id() = '" + update
+                            "from UserModels where id() = 'UserModels/" + update
                                     + "' or username = '" + update + "' or email = '" + update + "'")
                             .firstOrDefault();
 
@@ -177,7 +177,7 @@ public class User {
                     String delete = scanner.nextLine();
 
                     UserModel found_user = session.advanced().rawQuery(UserModel.class,
-                            "from UserModels where id() = '" + delete
+                            "from UserModels where id() = 'UserModels/" + delete
                                     + "' or username = '" + delete + "' or email = '" + delete + "'")
                             .firstOrDefault();
 
@@ -238,7 +238,7 @@ public class User {
         int pageSize = 5;
       
         UserModel found_user = session.advanced().rawQuery(UserModel.class,
-        "from UserModels where id() = '"+Model+"" + value
+        "from UserModels where id() = 'UserModels/" + value
                 + "' or username = '" + value + "' or email = '"
                 + value + "'")
         .firstOrDefault();
