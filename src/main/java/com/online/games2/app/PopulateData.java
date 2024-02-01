@@ -18,7 +18,12 @@ import net.ravendb.client.documents.queries.IndexQuery;
 import net.ravendb.client.documents.session.IDocumentSession;
 
 
+
 public class PopulateData {
+
+
+
+
     private final List<String> gameNames = Arrays.asList(
         "Batman: Arkham City",
         "The Witcher 3: Wild Hunt",

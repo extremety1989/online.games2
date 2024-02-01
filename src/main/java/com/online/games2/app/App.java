@@ -15,6 +15,7 @@ import java.util.Scanner;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import net.ravendb.client.documents.indexes.AbstractIndexCreationTask;
 
 public class App {
 
@@ -42,6 +43,15 @@ public class App {
     }
 }
 
+
+public class Users_ByUsernameAndEmail extends AbstractIndexCreationTask {
+    public Users_ByUsernameAndEmail() {
+        map = "docs.UserModels.Select(doc => new { " +
+            "    doc.username, " +
+            "    doc.email " +
+            "})";
+    }
+}
     public static void main(String[] args) {
         try (DocumentStore store = new DocumentStore()) {
             
@@ -49,15 +59,14 @@ public class App {
 
             store.setDatabase("OnlineGames");
             store.initialize();
-            
-          
-
+            App app = new App();
+            App.Users_ByUsernameAndEmail index = app.new Users_ByUsernameAndEmail();
+            index.execute(store);
 
             // This process establishes the connection with the Server
             // and downloads various configurations
             // e.g. cluster topology or client configuration
- 
-            
+
             Scanner scanner = new Scanner(System.in);
             Category category = new Category();
             Game game = new Game();
