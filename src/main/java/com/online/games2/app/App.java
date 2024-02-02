@@ -64,11 +64,7 @@ public class Users_ByUsernameAndEmail extends AbstractIndexCreationTask {
             App app = new App();
             App.Users_ByUsernameAndEmail index = app.new Users_ByUsernameAndEmail();
             index.execute(store);
-      
-
-            // This process establishes the connection with the Server
-            // and downloads various configurations
-            // e.g. cluster topology or client configuration
+    
 
             Scanner scanner = new Scanner(System.in);
             Category category = new Category();
