@@ -91,7 +91,7 @@ public class User {
                     String id_or_username_or_email = scanner.nextLine();
 
                     UserModel found_user = session.query(UserModel.class)
-                    .whereEquals("id", id_or_username_or_email)
+                    .whereEquals("id", "UserModels/" + id_or_username_or_email)
                     .orElse()
                     .whereEquals("username", id_or_username_or_email)
                     .orElse()
