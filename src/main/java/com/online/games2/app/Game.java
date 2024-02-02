@@ -110,10 +110,12 @@ public class Game {
             else if (sub_option == 2) {
                 try (IDocumentSession session = store.openSession()){
                   
-                    System.out.print("Enter id to view: ");
-                    String id = scanner.nextLine();
+                    System.out.print("Enter id or name to view: ");
+                    String id_or_name = scanner.nextLine();
 
-                    GameModel game = session.load(GameModel.class, "GameModels/" + id);
+                    GameModel game = session.advanced().rawQuery(GameModel.class, 
+                    "from GameModels where id() = 'GameModels/" + id_or_name + "'"
+                    + " or name = '" + id_or_name + "'").toList().get(0);
                     if (game == null) {
                         System.out.println("Game not found.");
                         return;
