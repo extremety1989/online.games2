@@ -199,14 +199,16 @@ public class Game {
             else if (sub_option == 4) {
                 try (IDocumentSession session = store.openSession()){
                                     // Delete a game
-                    System.out.print("Enter id or name of game to delete: ");
+                    System.out.print("Enter id of the game to delete: ");
                     String delete = scanner.nextLine();
-                
-                    session.advanced().rawQuery(GameModel.class, "from GameModels where id() = 'GameModels/" + delete + "'"
-                            + " or name = '" + delete + "'")
-                            .waitForNonStaleResults()
-                            .toList()
-                            .forEach(x -> session.delete(x));
+               
+                    try {
+                        session.delete("GameModels/" + delete);
+                        session.saveChanges();
+
+                    } catch (Exception e) {
+                        System.out.println("Comment not found.");
+                    }
                     session.saveChanges();
                 }
                 
