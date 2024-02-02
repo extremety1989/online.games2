@@ -243,7 +243,7 @@ public class User {
         int pageSize = 5;
       
         UserModel found_user = session.query(UserModel.class)
-        .whereEquals("id", value)
+        .whereEquals("id", "UserModels/"+value)
         .orElse()
         .whereEquals("username", value)
         .orElse()
