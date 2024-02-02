@@ -110,7 +110,7 @@ public class User {
 
                 try (IDocumentSession session = store.openSession()) {
                     System.out.print(
-                            "Enter lastname or firstname of user to update (or press enter to skip): ");
+                            "Enter id or username or email of user to update: ");
 
                     String id_or_username_or_emal = scanner.nextLine();
 
