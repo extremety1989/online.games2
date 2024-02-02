@@ -52,6 +52,8 @@ public class Users_ByUsernameAndEmail extends AbstractIndexCreationTask {
             "})";
     }
 }
+
+
     public static void main(String[] args) {
         try (DocumentStore store = new DocumentStore()) {
             
@@ -62,6 +64,7 @@ public class Users_ByUsernameAndEmail extends AbstractIndexCreationTask {
             App app = new App();
             App.Users_ByUsernameAndEmail index = app.new Users_ByUsernameAndEmail();
             index.execute(store);
+      
 
             // This process establishes the connection with the Server
             // and downloads various configurations
