@@ -113,17 +113,18 @@ public class Game {
                     System.out.print("Enter id or name to view: ");
                     String id_or_name = scanner.nextLine();
 
+                   try {
                     GameModel game = session.advanced().rawQuery(GameModel.class, 
                     "from GameModels where id() = 'GameModels/" + id_or_name + "'"
                     + " or name = '" + id_or_name + "'").toList().get(0);
-                    if (game == null) {
-                        System.out.println("Game not found.");
-                        return;
-                    }
+                   
 
                     Gson gson = new GsonBuilder().setPrettyPrinting().create();
                     String json = gson.toJson(game);
                     System.out.println(json);
+                   } catch (Exception e) {
+                    System.out.println("Game not found.");
+                   }
                 }
                 
             } 
@@ -135,14 +136,17 @@ public class Game {
                 
                 String update = scanner.nextLine();
 
-                GameModel gameModel = session.advanced().rawQuery(GameModel.class, 
+                GameModel gameModel = null;
+
+                try {
+                    gameModel = session.advanced().rawQuery(GameModel.class, 
                 "from GameModels where id() = 'GameModels/" + update + "'"
                 + " or name = '" + update + "'").toList().get(0);
-
-                if (gameModel == null) {
+                } catch (Exception e) {
                     System.out.println("Game not found.");
                     return;
                 }
+
 
                 System.out.print("Enter new name: ");
                 String newName = scanner.nextLine();
