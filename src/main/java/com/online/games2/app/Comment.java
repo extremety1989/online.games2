@@ -109,9 +109,9 @@ public class Comment {
                 try (IDocumentSession session = store.openSession())
                 {
                     System.out.print("Enter id of comment to delete: ");
-                    String delete = scanner.nextLine();
+                    String id = scanner.nextLine();
                     try {
-                        session.delete("CommentModels/" + delete);
+                        session.delete("CommentModels/" + id);
                         session.saveChanges();
 
                     } catch (Exception e) {
