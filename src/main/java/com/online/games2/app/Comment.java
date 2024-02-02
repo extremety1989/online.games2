@@ -37,7 +37,7 @@ public class Comment {
                     String user = scanner.nextLine();
 
                     UserModel userModel = session.query(UserModel.class)
-                    .whereEquals("id", user)
+                    .whereEquals("id", "UserModels/" +user)
                     .orElse()
                     .whereEquals("username", user)
                     .orElse()
@@ -50,7 +50,7 @@ public class Comment {
                     System.out.print("Enter id or name of game: ");
                     String game = scanner.nextLine();
                     GameModel gameModel = session.query(GameModel.class)
-                    .whereEquals("id", game)
+                    .whereEquals("id", "GameModels/" +game)
                     .orElse()
                     .whereEquals("name", game)
                     .firstOrDefault();

@@ -32,7 +32,7 @@ public class Rating {
                         System.out.print("Enter user id or username or email: ");
                         String gameName_or_gameId = scanner.nextLine();
                         UserModel userModel = session.query(UserModel.class)
-                        .whereEquals("id", gameName_or_gameId)
+                        .whereEquals("id", "UserModels/" +gameName_or_gameId)
                         .orElse()
                         .whereEquals("username", gameName_or_gameId)
                         .orElse()
@@ -45,7 +45,7 @@ public class Rating {
                         System.out.print("Enter id or name of game: ");
                         String game = scanner.nextLine();
                         GameModel gameModel = session.query(GameModel.class)
-                        .whereEquals("id", game)
+                        .whereEquals("id", "GameModels/" +game)
                         .orElse()
                         .whereEquals("name", game)
                         .firstOrDefault();
