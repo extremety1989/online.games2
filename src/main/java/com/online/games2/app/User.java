@@ -90,12 +90,13 @@ public class User {
                     System.out.print("Enter user_id, username or email to find: ");
                     String id_or_username_or_email = scanner.nextLine();
 
-                    UserModel found_user = session.advanced().rawQuery(UserModel.class,
-                            "from UserModels where id() = 'UserModels/" + id_or_username_or_email
-                                    + "' or username = '" + id_or_username_or_email + "' or email = '"
-                                    + id_or_username_or_email + "'")
-                            .firstOrDefault();
-
+                    UserModel found_user = session.query(UserModel.class)
+                    .whereEquals("id", id_or_username_or_email)
+                    .orElse()
+                    .whereEquals("username", id_or_username_or_email)
+                    .orElse()
+                    .whereEquals("email", id_or_username_or_email)
+                    .firstOrDefault();
                     if (found_user == null) {
                         System.out.println("User not found");
                         break;
@@ -111,7 +112,7 @@ public class User {
                     System.out.print(
                             "Enter lastname or firstname of user to update (or press enter to skip): ");
 
-                    String update = scanner.nextLine();
+                    String id_or_username_or_emal = scanner.nextLine();
 
                     System.out.print("Enter new lastname: ");
                     String newlastname = scanner.nextLine();
@@ -126,10 +127,13 @@ public class User {
                     System.out.print("Enter new password: ");
                     String newPassword = scanner.nextLine();
 
-                    UserModel found_user = session.advanced().rawQuery(UserModel.class,
-                            "from UserModels where id() = 'UserModels/" + update
-                                    + "' or username = '" + update + "' or email = '" + update + "'")
-                            .firstOrDefault();
+                    UserModel found_user = session.query(UserModel.class)
+                    .whereEquals("id", id_or_username_or_emal)
+                    .orElse()
+                    .whereEquals("username", id_or_username_or_emal)
+                    .orElse()
+                    .whereEquals("email", id_or_username_or_emal)
+                    .firstOrDefault();
 
                     if (found_user == null) {
                         System.out.println("User not found");
@@ -174,18 +178,19 @@ public class User {
             } else if (sub_option == 4) {
                 try (IDocumentSession session = store.openSession()) {
                     System.out.print("Enter id, username or email of user to delete: ");
-                    String delete = scanner.nextLine();
+                    String id_or_username_or_emal = scanner.nextLine();
 
-                    UserModel found_user = session.advanced().rawQuery(UserModel.class,
-                            "from UserModels where id() = 'UserModels/" + delete
-                                    + "' or username = '" + delete + "' or email = '" + delete + "'")
-                            .firstOrDefault();
-
+                    UserModel found_user = session.query(UserModel.class)
+                    .whereEquals("id", id_or_username_or_emal)
+                    .orElse()
+                    .whereEquals("username", id_or_username_or_emal)
+                    .orElse()
+                    .whereEquals("email", id_or_username_or_emal)
+                    .firstOrDefault();
                     if (found_user == null) {
                         System.out.println("User not found");
                         break;
                     }
-
                     session.delete(found_user);
                     session.saveChanges();
                 }
@@ -237,10 +242,12 @@ public class User {
         String value = scanner.nextLine();
         int pageSize = 5;
       
-        UserModel found_user = session.advanced().rawQuery(UserModel.class,
-        "from UserModels where id() = 'UserModels/" + value
-                + "' or username = '" + value + "' or email = '"
-                + value + "'")
+        UserModel found_user = session.query(UserModel.class)
+        .whereEquals("id", value)
+        .orElse()
+        .whereEquals("username", value)
+        .orElse()
+        .whereEquals("email", value)
         .firstOrDefault();
 
         if (found_user == null) {
